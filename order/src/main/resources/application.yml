@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: order-service
+
+server:
+  port: 19092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/ #유레카 클라이언트가 유레카 서버와 통신을 하기 위해 지정하는 url

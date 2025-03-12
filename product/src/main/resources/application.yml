@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: product-service
+
+# config 설정시 필요
+  profiles:
+    active: local
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+
+#위에서 프로필이 local로 설정되어 있기 때문에
+#config/src/main/resources/config-repo/product-service-local.yml에서 포트 설정을 가져와서 실행한다.
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/ #유레카 클라이언트가 유레카 서버와 통신을 하기 위해 지정하는 url
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
+
+message: "default message"

@@ -13,8 +13,6 @@ spring:
       hibernate:
         show-sql: true
         format-sql: true
-    hibernate:
-      ddl-auto: create
 
   kafka:
     host: ${Kafka_host}
@@ -27,6 +25,11 @@ spring:
       port: 6379
       username: ${Redis_name}
       password: ${Redis_password}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 server:
   port: 19091

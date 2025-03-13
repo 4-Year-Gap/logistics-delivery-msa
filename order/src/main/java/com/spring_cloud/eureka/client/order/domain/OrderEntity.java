@@ -25,10 +25,10 @@ public class OrderEntity {
     @UuidGenerator
     private UUID orderId;
 
-    private Long orderedBy;
-    private Long consumeCompanyId;
-    private Long supplyCompanyId;
-    private Long productId;
+    private String orderedBy;
+    private UUID consumeCompanyId;
+    private UUID supplyCompanyId;
+    private UUID productId;
     private Integer quantity;
     private Integer totalPrice;
     private String requestMessage;

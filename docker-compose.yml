@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  redis-stack:
+    image: redis/redis-stack-server:latest
+    container_name: my-redis-stack
+    restart: always
+    environment:
+      REDIS_ARGS: "--requirepass systempass"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_data:/data
+
+  mysql:
+    image: mysql:8.0.41
+    container_name: my-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234  # 루트 계정 비밀번호
+      MYSQL_DATABASE: mydatabase         # 생성할 데이터베이스 이름
+      MYSQL_USER: myuser                 # 사용자 계정
+      MYSQL_PASSWORD: mypassword         # 사용자 비밀번호
+    ports:
+      - "3306:3306"  # 호스트와 컨테이너의 포트 매핑
+    volumes:
+      - ./mysql_data:/var/lib/mysql  # 데이터 지속성을 위한 볼륨
+
+  rabbitmq:
+    image: rabbitmq:management  # 관리 UI가 포함된 이미지 사용
+    container_name: my-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP 프로토콜 포트
+      - "15672:15672" # 관리 UI 포트
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - ./rabbitmq/rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf  # 커스텀 설정 파일
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: my-zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: my-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://192.168.0.16:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: my-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      AUTH_TYPE: "LOGIN_FORM"
+      SPRING_SECURITY_USER_NAME: admin
+      SPRING_SECURITY_USER_PASSWORD: pass
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      KAFKA_CLUSTERS_0_READONLY: "false"

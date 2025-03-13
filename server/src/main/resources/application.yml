@@ -15,6 +15,6 @@ eureka:
     register-with-eureka: false #서버는 클라이언트가 아니므로 false
     fetch-registry: false #유레카 서버로 부터 레지스트리를 가져올지 말지를 결정
     service-url:
-      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}/:19090/eureka/ #유레카 클라이언트가 유레카 서버와 통신을 하기 위해 지정하는 url
+      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/ #유레카 클라이언트가 유레카 서버와 통신을 하기 위해 지정하는 url
   instance:
     hostname: ${Eureka_host} #로컬 호스트에서 진행하기 위해

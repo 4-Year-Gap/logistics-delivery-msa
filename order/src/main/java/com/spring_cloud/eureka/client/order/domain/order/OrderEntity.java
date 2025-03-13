@@ -1,17 +1,13 @@
-package com.spring_cloud.eureka.client.order.domain;
+package com.spring_cloud.eureka.client.order.domain.order;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -23,15 +19,24 @@ public class OrderEntity {
 
     @Id
     @UuidGenerator
+    @Column(nullable = false, name = "order_Id")
     private UUID orderId;
 
+    @Column(nullable = false)
     private String orderedBy;
+    @Column(nullable = false)
     private UUID consumeCompanyId;
+    @Column(nullable = false)
     private UUID supplyCompanyId;
+    @Column(nullable = false)
     private UUID productId;
+    @Column(nullable = false)
     private Integer quantity;
+    @Column(nullable = false)
     private Integer totalPrice;
+    @Column(nullable = false)
     private String requestMessage;
+    @Enumerated(EnumType.STRING)
     private OrderEntityStatus status;
 
 }

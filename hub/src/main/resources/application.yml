@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: hub
+
+  datasource:
+    url: jdbc:mysql://${Mysql_host}:3306/hub
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${Mysql_name}
+    password: ${Mysql_password}
+
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+        format-sql: true
+
+  kafka:
+    host: ${Kafka_host}
+    username: ${Kafka_name}
+    password: ${Kafka_password}
+
+  data:
+    redis:
+      host: ${Redis_host}
+      port: 6379
+      username: ${Redis_name}
+      password: ${Redis_password}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 19091
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/

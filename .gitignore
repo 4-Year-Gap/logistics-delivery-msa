@@ -36,3 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 /order/src/main/resources/properties/env.properties
+
+*.yml
+*.yaml
+*.properties

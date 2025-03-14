@@ -19,27 +19,6 @@ configurations {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/querydsl")
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs += "$buildDir/generated/querydsl"
-        }
-    }
-}
-
-tasks.register("cleanQuerydsl", Delete) {
-    delete file("$buildDir/generated/querydsl")
-}
-
-tasks.named("compileJava") {
-    dependsOn tasks.named("cleanQuerydsl")
-}
-
-
 repositories {
     mavenCentral()
 }
@@ -63,7 +42,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     implementation 'org.flywaydb:flyway-mysql'
 
     annotationProcessor 'org.projectlombok:lombok'
@@ -82,4 +62,24 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/querydsl")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += "$buildDir/generated/querydsl"
+        }
+    }
+}
+
+tasks.register("cleanQuerydsl", Delete) {
+    delete file("$buildDir/generated/querydsl")
+}
+
+tasks.named("compileJava") {
+    dependsOn tasks.named("cleanQuerydsl")
 }

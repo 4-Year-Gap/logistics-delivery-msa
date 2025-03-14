@@ -36,9 +36,17 @@ public class OrderController {
     public ApiResponse<?> updateOrder(
             @Header(name = "X-USER-ID") UUID userId,
             @RequestBody OrderUpdateRequest orderUpdateRequest
-    ) throws IllegalAccessException {
+    ) {
         orderService.updateOrder(orderUpdateRequest,userId);
         return ApiResponse.ok("일단 업데이트 성공");
+    }
+
+
+    @GetMapping("/{order_Id}")
+    public ApiResponse<?> getOneOrderInformationById(@PathVariable UUID order_Id){
+
+
+        return ApiResponse.ok(orderService.getOneOrderInformationById(order_Id));
     }
 
 }

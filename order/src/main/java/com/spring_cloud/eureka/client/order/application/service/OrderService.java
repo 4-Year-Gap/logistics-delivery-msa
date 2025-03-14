@@ -1,9 +1,7 @@
 package com.spring_cloud.eureka.client.order.application.service;
 
 
-import com.spring_cloud.eureka.client.order.domain.delivery.Delivery;
-import com.spring_cloud.eureka.client.order.domain.delivery.DeliveryHubRoute;
-import com.spring_cloud.eureka.client.order.domain.delivery.DeliveryStatusEnum;
+
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
 import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
@@ -12,15 +10,15 @@ import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 import com.spring_cloud.eureka.client.order.presentation.dto.OrderUpdateRequest;
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
-import feign.FeignException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +67,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void updateOrder(OrderUpdateRequest orderUpdateRequest,UUID userId) throws IllegalAccessException {
+    public void updateOrder(OrderUpdateRequest orderUpdateRequest,UUID userId)  {
 
         OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
@@ -79,10 +77,17 @@ public class OrderService {
         String userName = "testUser";
 
         if (!userName.equals(orderEntity.getOrderedBy())){
-            throw new IllegalAccessException("not own order");
+            throw new IllegalArgumentException("not own order");
         }
 
         orderEntity.setStatus(orderUpdateRequest.getOrderEntityStatus());
     }
 
+    public OrderEntity getOneOrderInformationById(UUID orderId) {
+
+      OrderEntity orderEntity = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
+
+      return orderEntity;
+    }
 }

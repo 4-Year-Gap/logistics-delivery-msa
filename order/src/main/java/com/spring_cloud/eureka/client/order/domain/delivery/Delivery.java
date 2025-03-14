@@ -18,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
+@Table(name = "p_ deliveries")
 public class Delivery extends BaseEntity {
 
     @Id

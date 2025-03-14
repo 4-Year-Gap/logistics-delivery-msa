@@ -36,12 +36,24 @@ public class OrderService {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(orderCreateRequest);
-        ProductClientResponse productClientResponse = productClient.getProduct(orderCreateRequest.getProductId(), productClientRequest).data();
+//        ProductClientResponse productClientResponse = productClient.getProduct(orderCreateRequest.getProductId(), productClientRequest).data();
+       //니중에 삭제
+        ProductClientResponse productClientResponse = new ProductClientResponse();
+        productClientResponse.setEndHub(UUID.randomUUID());
+        productClientResponse.setStartHub(UUID.randomUUID());
+        productClientResponse.setProductId(UUID.randomUUID());
+        productClientResponse.setStock(100);
 
         HubRouteRequest hubRouteRequest = HubRouteRequest.create(productClientResponse);
-        HubClientResponse hubClientResponse = hubClient.getRoute(hubRouteRequest).data();
+        // 나중에 주석 해제
+//        HubClientResponse hubClientResponse = hubClient.getRoute(hubRouteRequest).data();
+//        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
 
-        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
+        //나중에 삭제
+        UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
+        userInfoClientResponse.setUserId(UUID.randomUUID());
+        userInfoClientResponse.setSlackId("test_user_slackId");
+        userInfoClientResponse.setUserName("testUser");
 
         OrderEntity orderEntity = orderRepository.save(
                 OrderEntity.create(
@@ -49,9 +61,6 @@ public class OrderService {
                         orderCreateRequest
                 )
         );
-
-
-
 
 
 

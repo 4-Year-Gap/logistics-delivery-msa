@@ -13,6 +13,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "p_ delivery_routes")
 public class DeliveryHubRoute {
 
 

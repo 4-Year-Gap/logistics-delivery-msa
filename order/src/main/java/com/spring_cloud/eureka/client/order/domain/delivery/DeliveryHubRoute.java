@@ -2,9 +2,7 @@ package com.spring_cloud.eureka.client.order.domain.delivery;
 
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubRoute;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -13,6 +11,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DeliveryHubRoute {
 
 
@@ -33,6 +33,7 @@ public class DeliveryHubRoute {
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatusEnum deliveryStatus;
+
 
     public static DeliveryHubRoute create(HubRoute hubRoute){
         return DeliveryHubRoute.builder()

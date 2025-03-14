@@ -27,6 +27,6 @@ public class OrderController {
 
         OrderEntity customOrder = orderService.createOrder(orderCreateRequest,userId);
 
-        return ApiResponse.created("생성완료");
+        return ApiResponse.created(customOrder);
     }
 }

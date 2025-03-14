@@ -4,6 +4,7 @@ package com.spring_cloud.eureka.client.order.presentation.controller;
 import com.spring_cloud.eureka.client.order.application.service.OrderService;
 import com.spring_cloud.eureka.client.order.common.ApiResponse;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
+import com.spring_cloud.eureka.client.order.presentation.dto.OrderUpdateRequest;
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.Header;
@@ -29,4 +30,15 @@ public class OrderController {
 
         return ApiResponse.created(customOrder);
     }
+
+
+    @PatchMapping
+    public ApiResponse<?> updateOrder(
+            @Header(name = "X-USER-ID") UUID userId,
+            @RequestBody OrderUpdateRequest orderUpdateRequest
+    ) throws IllegalAccessException {
+        orderService.updateOrder(orderUpdateRequest,userId);
+        return ApiResponse.ok("일단 업데이트 성공");
+    }
+
 }

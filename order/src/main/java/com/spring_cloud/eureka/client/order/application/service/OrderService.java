@@ -10,6 +10,7 @@ import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.UserInfoClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
+import com.spring_cloud.eureka.client.order.presentation.dto.OrderUpdateRequest;
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
@@ -67,20 +68,21 @@ public class OrderService {
         return orderEntity;
     }
 
-    private Delivery createDelivery(OrderCreateRequest orderCreateRequest,
-                                    ProductClientResponse productClientResponse,
-                                    List<DeliveryHubRoute> shortestHubRoute,
-                                    String slackId,
-                                    UUID userId
-    ) {
-        return Delivery.create(
-                orderCreateRequest.getAddress(),
-                DeliveryStatusEnum.ACCEPTED,
-                productClientResponse.getStartHub(),
-                productClientResponse.getEndHub(),
-                slackId,
-                userId,
-                shortestHubRoute
-        );
+    @Transactional
+    public void updateOrder(OrderUpdateRequest orderUpdateRequest,UUID userId) throws IllegalAccessException {
+
+        OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
+
+//        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
+
+        String userName = "testUser";
+
+        if (!userName.equals(orderEntity.getOrderedBy())){
+            throw new IllegalAccessException("not own order");
+        }
+
+        orderEntity.setStatus(orderUpdateRequest.getOrderEntityStatus());
     }
+
 }

@@ -1,28 +1,27 @@
 package com.spring_cloud.eureka.client.order.domain.order;
 
 
+import com.spring_cloud.eureka.client.order.domain.BaseEntity;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubClientResponse;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.ProductClientResponse;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.UserInfoClientResponse;
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.UuidGenerator;
 
 
 import java.util.UUID;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "p_order")
 @Entity
 @Builder
-public class OrderEntity {
+public class OrderEntity extends BaseEntity {
 
     @Id
     @UuidGenerator

@@ -8,7 +8,8 @@ import java.util.List;
 
 @Getter
 public class HubClientResponse {
-
-    List<HubRoute> shortestRoute;
+    private List<HubRoute> shortestRoute;
+    private Long estimatedTime;
+    private Long estimatedDistance;
 
 }

@@ -2,10 +2,6 @@ package com.spring_cloud.eureka.client.order.domain.order;
 
 
 import com.spring_cloud.eureka.client.order.domain.BaseEntity;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubClientResponse;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.ProductClientResponse;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.UserInfoClientResponse;
-import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -60,18 +56,17 @@ public class OrderEntity extends BaseEntity {
     @Comment("배송 현재 상태")
     private OrderEntityStatus status;
 
-    public static OrderEntity create(UserInfoClientResponse userInfoClientResponse, OrderCreateRequest orderCreateRequest) {
 
+    public static OrderEntity create(String userName, UUID productId, Integer productPrice, UUID supplierId, UUID receivingCompanyId, Integer productQuantity, String requestMessage) {
         return OrderEntity.builder()
-                .orderedBy(userInfoClientResponse.getUserName())
-                .consumeCompanyId(orderCreateRequest.getReceivingCompanyId())
-                .supplyCompanyId(orderCreateRequest.getSupplierId())
-                .productId(orderCreateRequest.getProductId())
-                .quantity(orderCreateRequest.getProductQuantity())
-                .totalPrice(orderCreateRequest.getProductPrice() * orderCreateRequest.getProductQuantity())
-                .requestMessage(orderCreateRequest.getRequestMessage())
+                .orderedBy(userName)
+                .consumeCompanyId(receivingCompanyId)
+                .supplyCompanyId(supplierId)
+                .productId(productId)
+                .quantity(productQuantity)
+                .totalPrice(productPrice)
+                .requestMessage(requestMessage)
                 .status(OrderEntityStatus.ACCEPTED)
                 .build();
-
     }
 }

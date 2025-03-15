@@ -2,19 +2,23 @@ package com.spring_cloud.eureka.client.order.application.service;
 
 
 
+import com.spring_cloud.eureka.client.order.application.OrderSearchCondition;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
+import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
 import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.UserInfoClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
-import com.spring_cloud.eureka.client.order.presentation.dto.OrderUpdateRequest;
-import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 
+import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 
 import java.util.UUID;
@@ -31,7 +35,7 @@ public class OrderService {
     private final UserInfoClient userInfoClient;
 
     @Transactional
-    public OrderEntity createOrder(OrderCreateRequest orderCreateRequest, UUID userId) {
+    public OrderEntity createOrder(OrderCreateRequest orderCreateRequest, Integer userId) {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(orderCreateRequest);
@@ -42,10 +46,7 @@ public class OrderService {
         productClientResponse.setStartHub(UUID.randomUUID());
         productClientResponse.setProductId(UUID.randomUUID());
         productClientResponse.setStock(100);
-
-        HubRouteRequest hubRouteRequest = HubRouteRequest.create(productClientResponse);
         // 나중에 주석 해제
-//        HubClientResponse hubClientResponse = hubClient.getRoute(hubRouteRequest).data();
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
 
         //나중에 삭제
@@ -54,22 +55,29 @@ public class OrderService {
         userInfoClientResponse.setSlackId("test_user_slackId");
         userInfoClientResponse.setUserName("testUser");
 
-        OrderEntity orderEntity = orderRepository.save(
-                OrderEntity.create(
-                        userInfoClientResponse,
-                        orderCreateRequest
-                )
-        );
+        OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,orderCreateRequest));
 
-
+        //배송으로 createdOrderEvent
 
         return orderEntity;
     }
 
-    @Transactional
-    public void updateOrder(OrderUpdateRequest orderUpdateRequest,UUID userId)  {
+    private OrderEntity orderCreate(UserInfoClientResponse userInfoClientResponse, OrderCreateRequest orderCreateRequest) {
+        return OrderEntity.create(
+                userInfoClientResponse.getUserName(),
+                orderCreateRequest.getProductId(),
+                orderCreateRequest.getProductPrice(),
+                orderCreateRequest.getSupplierId(),
+                orderCreateRequest.getReceivingCompanyId(),
+                orderCreateRequest.getProductQuantity(),
+                orderCreateRequest.getRequestMessage()
+        );
+    }
 
-        OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId())
+    @Transactional
+    public void updateOrder(UUID updateOrderId, OrderEntityStatus orderEntityStatus, Integer userId)  {
+
+        OrderEntity orderEntity = orderRepository.findById(updateOrderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
 
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
@@ -80,7 +88,7 @@ public class OrderService {
             throw new IllegalArgumentException("not own order");
         }
 
-        orderEntity.setStatus(orderUpdateRequest.getOrderEntityStatus());
+        orderEntity.setStatus(orderEntityStatus);
     }
 
     public OrderEntity getOneOrderInformationById(UUID orderId) {
@@ -90,4 +98,15 @@ public class OrderService {
 
       return orderEntity;
     }
+
+    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
+
+
+        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
+
+
+        return  orderRepository.search(searchCondition);
+    }
+
+
 }

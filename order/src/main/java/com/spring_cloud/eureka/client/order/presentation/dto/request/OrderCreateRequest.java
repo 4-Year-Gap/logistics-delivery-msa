@@ -1,19 +1,12 @@
 package com.spring_cloud.eureka.client.order.presentation.dto.request;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 
 import java.util.UUID;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderCreateRequest{
+public  class OrderCreateRequest{
 
     private UUID supplierId;// 제품 공급 업체
     private UUID receivingCompanyId;// 제품 수요 업체

@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.presentation.dto;
+package com.spring_cloud.eureka.client.order.presentation.dto.request;
 
 
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;

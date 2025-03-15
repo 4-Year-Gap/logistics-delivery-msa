@@ -17,9 +17,9 @@ public class FeignConfig {
         return new RequestInterceptor() {
             @Override
             public void apply(RequestTemplate requestTemplate) {
-                String token = getCurrentUserToken();
-                if (token != null) {
-                    requestTemplate.header("Authorization", token);
+                String userId = getCurrentUserToken();
+                if (userId != null) {
+                    requestTemplate.header("X-USER-ID", userId);
                 }
             }
         };
@@ -29,7 +29,7 @@ public class FeignConfig {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
-            return request.getHeader("Authorization");
+            return request.getHeader("X-USER-ID");
         }
         return null;
     }

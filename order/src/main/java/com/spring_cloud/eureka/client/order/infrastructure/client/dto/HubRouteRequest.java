@@ -1,6 +1,5 @@
 package com.spring_cloud.eureka.client.order.infrastructure.client.dto;
 
-import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import lombok.*;
 
 import java.util.UUID;
@@ -13,8 +12,6 @@ import java.util.UUID;
 public class HubRouteRequest {
     private UUID startHub;
     private UUID endHub;
-
-
 
     public static HubRouteRequest create(ProductClientResponse clientResponse){
         return HubRouteRequest.builder()

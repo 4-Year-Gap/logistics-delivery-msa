@@ -10,7 +10,6 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
 @Getter
-@Setter
 @Entity
 @Table(name= "product") //매핑할 테이블명
 @NoArgsConstructor
@@ -42,20 +41,21 @@ public class Product extends BaseEntity{
 
     @Column(name = "name", nullable = false)
     @Comment("상품명")
-    private String name;
+    private String productName;
 
     @Column(nullable = false)
     @Comment("출고 가능 수량")
     private Integer stock;
 
-
-    public Product(ProductRequestDto requestDto) {
-        this.userId = UUID.randomUUID();
-        this.companyId= UUID.randomUUID();
-        this.hubId = UUID.randomUUID();
-        this.name = requestDto.getName();
-        this.price = requestDto.getPrice();
-        this.stock = requestDto.getStock();
-
+    //정적 팩토리 메서드(create 메서드) 사용
+    public static Product create(String productName, Integer price, Integer stock) {
+        Product product = new Product();
+        product.userId = UUID.randomUUID();
+        product.companyId= UUID.randomUUID();
+        product.hubId = UUID.randomUUID();
+        product.productName = productName;
+        product.price = price;
+        product.stock = stock;
+        return product;
     }
 }

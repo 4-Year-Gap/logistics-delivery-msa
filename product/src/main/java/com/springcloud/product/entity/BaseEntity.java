@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseEntity {
+public abstract class BaseEntity {
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

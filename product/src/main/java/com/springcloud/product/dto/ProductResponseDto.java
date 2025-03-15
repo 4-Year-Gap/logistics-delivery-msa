@@ -23,7 +23,7 @@ public class ProductResponseDto {
     //업체ID
     private UUID company_id;
     //상품명
-    private String name;
+    private String productName;
     //상품 가격
     private Integer price;
     //출고 가능 수량
@@ -35,7 +35,7 @@ public class ProductResponseDto {
         this.hub_id = product.getHubId();
         this.user_id = product.getUserId();
         this.company_id = product.getCompanyId();
-        this.name = product.getName();
+        this.productName = product.getProductName();
         this.price = product.getPrice();
         this.stock = product.getStock();
 

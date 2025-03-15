@@ -18,8 +18,12 @@ public class ProductService {
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto requestDto) {
         //객체 생성
-        Product product = productRepository.save(new Product(requestDto));
-
+        Product product = Product.create(
+                requestDto.getProductName(),
+                requestDto.getPrice(),
+                requestDto.getStock()
+        );
+        productRepository.save(product);
         return new ProductResponseDto(product);
     }
 }

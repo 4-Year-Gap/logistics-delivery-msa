@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class ProductRequestDto {
     //상품명
-    private String name;
+    private String productName;
     //상품 가격
     private Integer price;
     //출고 가능 수량

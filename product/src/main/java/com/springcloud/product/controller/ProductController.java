@@ -16,7 +16,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("")
+    @PostMapping
     public ProductResponseDto createProduct(@RequestBody ProductRequestDto requestDto){
         //응답 보내기
         return productService.createProduct(requestDto);

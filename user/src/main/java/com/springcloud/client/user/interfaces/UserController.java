@@ -3,6 +3,7 @@ package com.springcloud.client.user.interfaces;
 import com.springcloud.client.user.application.UserFacade;
 import com.springcloud.client.user.domain.SignupCommand;
 import com.springcloud.client.user.domain.SignupInfo;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,7 @@ public class UserController {
     private final UserFacade userFacade;
 
     @PostMapping("/signup")
-    public ResponseEntity<SignupDto.SignupResponse> signup(@RequestBody SignupDto.SignupRequest request) {
+    public ResponseEntity<SignupDto.SignupResponse> signup(@RequestBody @Valid SignupDto.SignupRequest request) {
         SignupCommand command = request.toCommand();
         SignupInfo info = userFacade.signUp(command);
         SignupDto.SignupResponse response = new SignupDto.SignupResponse(info);

@@ -1,8 +1,9 @@
-package com.springcloud.hub.infrastructure;
+package com.springcloud.hub.infrastructure.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.entity.QHub;
+import com.springcloud.hub.domain.repository.HubRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

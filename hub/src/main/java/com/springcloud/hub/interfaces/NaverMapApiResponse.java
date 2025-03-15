@@ -1,4 +1,4 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.interfaces;
 
 import java.math.BigDecimal;
 import java.util.List;

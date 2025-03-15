@@ -1,4 +1,4 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.interfaces;
 
 import lombok.Data;
 

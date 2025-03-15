@@ -1,7 +1,7 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.interfaces;
 
+import com.springcloud.hub.application.NaverMapHubFacade;
 import com.springcloud.hub.domain.entity.HubRoute;
-import com.springcloud.hub.domain.service.NaverMapHubApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NaverHubApiController {
 
-    private final NaverMapHubApiService naverMapHubApiService;
+    private final NaverMapHubFacade naverMapHubApiService;
 
     @GetMapping("/{startHubId}/route/{goalHubId}")
     public ResponseEntity<HubRoute> getRoute(

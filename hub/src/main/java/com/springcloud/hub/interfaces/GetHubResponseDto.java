@@ -1,4 +1,4 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.interfaces;
 
 import com.springcloud.hub.domain.entity.Hub;
 

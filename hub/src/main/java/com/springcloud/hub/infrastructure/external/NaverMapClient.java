@@ -1,4 +1,4 @@
-package com.springcloud.hub.domain.api;
+package com.springcloud.hub.infrastructure.external;
 
 import java.math.BigDecimal;
 

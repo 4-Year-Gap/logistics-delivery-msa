@@ -11,6 +11,12 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class NaverMapProperties {
     private String url;
-    private String keyId;
-    private String keyValue;
+    private Key key = new Key();
+
+    @Getter
+    @Setter
+    public static class Key { // 중첩 객체 클래스
+        private String id;
+        private String value;
+    }
 }

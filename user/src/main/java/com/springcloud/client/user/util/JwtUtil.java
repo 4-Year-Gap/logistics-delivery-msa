@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -76,5 +77,30 @@ public class JwtUtil {
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    public String substringToken(String tokenValue) {
+        // Bearer 다음에 있는 토근 값만 추출
+        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
+            return tokenValue.substring(7);
+        }
+        logger.error("토큰을 찾을 수 없습니다.");
+        throw new NullPointerException("토큰을 찾을 수 없습니다.");
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            logger.error("JWT 서명이 유효하지 않습니다.");
+        } catch (ExpiredJwtException e) {
+            logger.error("만료된 JWT 입니다.");
+        } catch (UnsupportedJwtException e) {
+            logger.error("지원되지 않는 JWT 입니다.");
+        } catch (IllegalArgumentException e) {
+            logger.error("잘못된 JWT 입니다.");
+        }
+        return false;
     }
 }

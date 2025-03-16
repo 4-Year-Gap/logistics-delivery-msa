@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 
@@ -33,6 +34,7 @@ public class OrderService {
     private final ProductClient productClient;
     private final HubClient hubClient;
     private final UserInfoClient userInfoClient;
+    private final KafkaTemplate<String,String> kafkaTemplate;
 
     @Transactional
     public OrderEntity createOrder(OrderCreateRequest orderCreateRequest, Integer userId) {
@@ -109,4 +111,9 @@ public class OrderService {
     }
 
 
+    public void createOrderEvent(String orderId) {
+
+        kafkaTemplate.send("order_topic","order_key",orderId);
+
+    }
 }

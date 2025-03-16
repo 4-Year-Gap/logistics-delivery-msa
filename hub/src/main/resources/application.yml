@@ -13,6 +13,8 @@ spring:
       hibernate:
         show-sql: true
         format-sql: true
+#        hbm2ddl:
+#          auto: update
 
   kafka:
     host: ${Kafka_host}
@@ -33,6 +35,13 @@ spring:
 
 server:
   port: 19091
+
+naver:
+  api:
+    url: ${Naver_map_api_url}
+    key:
+      id: ${Naver_map_api_key_id}
+      value: ${Naver_map_api_key_value}
 
 eureka:
   client:

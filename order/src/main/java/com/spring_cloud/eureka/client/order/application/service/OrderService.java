@@ -2,7 +2,6 @@ package com.spring_cloud.eureka.client.order.application.service;
 
 
 
-import com.spring_cloud.eureka.client.order.application.OrderSearchCondition;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
 import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
@@ -15,8 +14,7 @@ import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreate
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -101,19 +99,21 @@ public class OrderService {
       return orderEntity;
     }
 
-    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
-
-
-        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
-
-
-        return  orderRepository.search(searchCondition);
-    }
+//    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
+//
+//
+//        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
+//
+//
+//        return  orderRepository.search(searchCondition,pageable);
+//
+//    }
 
 
     public void createOrderEvent(String orderId) {
 
-        kafkaTemplate.send("order_topic","order_key",orderId);
+        ProducerRecord<String,String> record = new ProducerRecord<>("order_topic","order_Key",orderId);
+        kafkaTemplate.send(record);
 
     }
 }

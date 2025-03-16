@@ -1,5 +1,6 @@
 package com.springcloud.hub.interfaces;
 
+import com.springcloud.hub.application.GetRouteCommand;
 import com.springcloud.hub.application.NaverMapHubFacade;
 import com.springcloud.hub.domain.entity.HubRoute;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,9 @@ public class NaverHubApiController {
             @PathVariable UUID startHubId,
             @PathVariable UUID goalHubId) {
 
-        HubRoute routeInfo = naverMapHubApiService.getOptimalRoute(startHubId, goalHubId);
+        GetRouteCommand command = new GetRouteCommand(startHubId, goalHubId);
+
+        HubRoute routeInfo = naverMapHubApiService.getOptimalRoute(command);
         return ResponseEntity.ok(routeInfo);
     }
 

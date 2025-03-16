@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +18,11 @@ public class NaverMapHubFacade {
     /**
      * 특정 허브에서 목적지까지 최적 경로 조회 (단일 허브)
      */
-    public HubRoute getOptimalRoute(UUID startHubId, UUID goalHubId) {
-        Hub startHub = hubRepository.findById(startHubId)
-                .orElseThrow(() -> new IllegalArgumentException("출발지 허브 정보를 찾을 수 없습니다: " + startHubId));
-        Hub goalHub = hubRepository.findById(goalHubId)
-                .orElseThrow(() -> new IllegalArgumentException("도착지 허브 정보를 찾을 수 없습니다: " + goalHubId));
+    public HubRoute getOptimalRoute(GetRouteCommand command) {
+        Hub startHub = hubRepository.findHubById(command.startHubId())
+                .orElseThrow(() -> new IllegalArgumentException("출발지 허브 정보를 찾을 수 없습니다: " + command.startHubId()));
+        Hub goalHub = hubRepository.findHubById(command.goalHubId())
+                .orElseThrow(() -> new IllegalArgumentException("도착지 허브 정보를 찾을 수 없습니다: " + command.goalHubId()));
 
         return hubRouteDomainService.fetchAndSaveRoute(startHub, goalHub);
     }

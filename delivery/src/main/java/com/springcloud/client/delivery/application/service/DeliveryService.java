@@ -1,12 +1,15 @@
 package com.springcloud.client.delivery.application.service;
 
 
+import com.springcloud.client.delivery.common.ApiResponse;
 import com.springcloud.client.delivery.domain.delivery.Delivery;
 import com.springcloud.client.delivery.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,5 +22,14 @@ public class DeliveryService {
 
         return deliveryRepository.search(userId,role,pageable);
 
+    }
+
+    public Delivery getDelivery(Integer userId, String role, UUID deliveryId) {
+
+//        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
+//                new IllegalArgumentException("Asd")
+//        );
+
+        return null;
     }
 }

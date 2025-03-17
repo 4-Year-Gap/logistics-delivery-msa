@@ -4,9 +4,7 @@ package com.spring_cloud.eureka.client.order.application.service;
 
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
-import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
-import com.spring_cloud.eureka.client.order.infrastructure.client.UserInfoClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
@@ -30,8 +28,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
-    private final HubClient hubClient;
-    private final UserInfoClient userInfoClient;
     private final KafkaTemplate<String,String> kafkaTemplate;
 
     @Transactional

@@ -14,7 +14,14 @@ public class HubClientResponse {
     private Long estimatedTime;
     private Long estimatedDistance;
 
-
+    @Override
+    public String toString() {
+        return "HubClientResponse{" +
+                "shortestRoute=" + shortestRoute +
+                ", estimatedTime=" + estimatedTime +
+                ", estimatedDistance=" + estimatedDistance +
+                '}';
+    }
 
     public List<DeliveryHubRoute> fromHubRoute() {
         return this.shortestRoute.stream()

@@ -27,9 +27,12 @@ public class OrderCreateListener {
         OrderCreateEvent orderCreateEvent = OrderCreateEvent.fromJson(orderId);
 
         assert orderCreateEvent != null;
-        HubRouteRequest hubRouteRequest = HubRouteRequest.create(orderCreateEvent);
+//        HubRouteRequest hubRouteRequest = HubRouteRequest.create(orderCreateEvent);
 
-        HubClientResponse hubClientResponse = hubClient.getRoute(hubRouteRequest).data();
+        HubClientResponse hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub()).data();
+
+
+        System.out.println(hubClientResponse.toString());
 
         UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(1).data();
 

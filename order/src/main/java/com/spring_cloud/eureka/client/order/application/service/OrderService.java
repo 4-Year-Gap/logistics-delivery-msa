@@ -2,21 +2,18 @@ package com.spring_cloud.eureka.client.order.application.service;
 
 
 
-import com.spring_cloud.eureka.client.order.application.OrderSearchCondition;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
-import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
-import com.spring_cloud.eureka.client.order.infrastructure.client.UserInfoClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 
@@ -31,8 +28,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
-    private final HubClient hubClient;
-    private final UserInfoClient userInfoClient;
+    private final KafkaTemplate<String,String> kafkaTemplate;
 
     @Transactional
     public OrderEntity createOrder(OrderCreateRequest orderCreateRequest, Integer userId) {
@@ -57,7 +53,12 @@ public class OrderService {
 
         OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,orderCreateRequest));
 
+//        OrderCreateEvent orderCreateEvent = new OrderCreateEvent(orderEntity.getOrderId(),productClientResponse.getStartHub(),productClientResponse.getEndHub());
+
+
         //배송으로 createdOrderEvent
+
+//        kafkaTemplate.send("order_created",orderCreateEvent);
 
         return orderEntity;
     }
@@ -99,14 +100,24 @@ public class OrderService {
       return orderEntity;
     }
 
-    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
+//    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
+//
+//
+//        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
+//
+//
+//        return  orderRepository.search(searchCondition,pageable);
+//
+//    }
 
 
-        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
+    public void createOrderEvent(String orderId) {
 
 
-        return  orderRepository.search(searchCondition);
+        OrderCreateEvent event = new OrderCreateEvent(orderId,UUID.randomUUID(),UUID.randomUUID());
+
+
+        kafkaTemplate.send("order_topic",event.toJson());
+
     }
-
-
 }

@@ -40,7 +40,6 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
-
 	//dsl
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
@@ -50,7 +49,6 @@ dependencies {
 
 	//kafka
 	implementation 'org.springframework.kafka:spring-kafka'
-
 }
 
 dependencyManagement {

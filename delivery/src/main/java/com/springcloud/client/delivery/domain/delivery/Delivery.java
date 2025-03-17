@@ -1,8 +1,7 @@
-package com.spring_cloud.eureka.client.order.domain.delivery;
+package com.springcloud.client.delivery.domain.delivery;
 
 
-import com.spring_cloud.eureka.client.order.domain.BaseEntity;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubClientResponse;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -20,6 +19,20 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_ deliveries")
 public class Delivery extends BaseEntity {
+
+    @Override
+    public String toString() {
+        return "Delivery{" +
+                "deliveryId=" + deliveryId +
+                ", status=" + status +
+                ", startHubId=" + startHubId +
+                ", endHubId=" + endHubId +
+                ", address='" + address + '\'' +
+                ", receiverSlackId='" + receiverSlackId + '\'' +
+                ", receiverId=" + receiverId +
+                ", deliveryHubRouteList=" + deliveryHubRouteList +
+                '}';
+    }
 
     @Id
     @UuidGenerator
@@ -59,7 +72,6 @@ public class Delivery extends BaseEntity {
                                   DeliveryStatusEnum deliveryStatusEnum,
                                   UUID startHub, UUID endHub,
                                   String slackId,
-                                  UUID id,
                                   List<DeliveryHubRoute> deliveryHubRouteList)
     {
         return Delivery.builder()

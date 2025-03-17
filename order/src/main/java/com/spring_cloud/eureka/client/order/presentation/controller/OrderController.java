@@ -46,21 +46,30 @@ public class OrderController {
     }
 
 
-    @GetMapping("/{order_Id}")
-    public ApiResponse<?> getOneOrderInformationById(@PathVariable UUID order_Id){
+    @GetMapping("/{orderId}")
+    public ApiResponse<?> getOneOrderInformationById(@PathVariable(name = "orderId") UUID order_Id){
         return ApiResponse.ok(orderService.getOneOrderInformationById(order_Id));
     }
 
 
 
-    @GetMapping("/search}")
+    @GetMapping("/search")
     public ApiResponse<?> getOrders(
             @Header(name = "X-USER-ID") Integer userId,
             @Header(name = "X-USER-ROLE") String userRole,
             Pageable pageable
     ){
-        return ApiResponse.ok(orderService.getOrders(userId,userRole,pageable));
+//        return ApiResponse.ok(orderService.getOrders(userId,userRole,pageable));
+        return null;
     }
 
+
+    @GetMapping("/kafkaTest/{testOrderId}")
+    public ApiResponse<?> kafkaTest(@PathVariable(name = "testOrderId") String orderId){
+
+
+        orderService.createOrderEvent(orderId);
+        return ApiResponse.ok("이벤트 발생 성공");
+    }
 
 }

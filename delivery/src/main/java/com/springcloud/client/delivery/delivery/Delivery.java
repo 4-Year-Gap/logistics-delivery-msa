@@ -20,6 +20,20 @@ import java.util.UUID;
 @Table(name = "p_ deliveries")
 public class Delivery extends BaseEntity {
 
+    @Override
+    public String toString() {
+        return "Delivery{" +
+                "deliveryId=" + deliveryId +
+                ", status=" + status +
+                ", startHubId=" + startHubId +
+                ", endHubId=" + endHubId +
+                ", address='" + address + '\'' +
+                ", receiverSlackId='" + receiverSlackId + '\'' +
+                ", receiverId=" + receiverId +
+                ", deliveryHubRouteList=" + deliveryHubRouteList +
+                '}';
+    }
+
     @Id
     @UuidGenerator
     @Column(nullable = false, name = "delivery_Id")

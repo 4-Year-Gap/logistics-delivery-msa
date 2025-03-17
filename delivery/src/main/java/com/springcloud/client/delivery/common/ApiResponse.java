@@ -2,8 +2,6 @@ package com.springcloud.client.delivery.common;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.spring_cloud.eureka.client.order.common.CustomException;
-import com.spring_cloud.eureka.client.order.common.ExceptionDto;
 import jakarta.annotation.Nullable;
 import org.springframework.http.HttpStatus;
 

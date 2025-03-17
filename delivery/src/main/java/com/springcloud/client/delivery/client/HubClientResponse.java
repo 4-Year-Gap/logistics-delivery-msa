@@ -1,14 +1,25 @@
 package com.springcloud.client.delivery.client;
 
 
-import com.spring_cloud.eureka.client.order.domain.delivery.DeliveryHubRoute;
+
+import com.springcloud.client.delivery.delivery.DeliveryHubRoute;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class HubClientResponse {
     private List<HubRoute> shortestRoute;
     private Long estimatedTime;
     private Long estimatedDistance;
+
+
+
+    public List<DeliveryHubRoute> fromHubRoute() {
+        return this.shortestRoute.stream()
+                .map(DeliveryHubRoute::create)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -1,7 +1,7 @@
 package com.springcloud.client.delivery.common;
 
 
-import com.spring_cloud.eureka.client.order.common.ErrorCode;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 

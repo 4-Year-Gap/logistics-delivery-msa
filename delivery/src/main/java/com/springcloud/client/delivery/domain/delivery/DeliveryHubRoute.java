@@ -1,7 +1,7 @@
-package com.springcloud.client.delivery.delivery;
+package com.springcloud.client.delivery.domain.delivery;
 
 
-import com.springcloud.client.delivery.client.HubRoute;
+import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;

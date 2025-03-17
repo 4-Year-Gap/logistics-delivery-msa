@@ -1,4 +1,4 @@
-package com.springcloud.client.delivery.client;
+package com.springcloud.client.delivery.infrastructure.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

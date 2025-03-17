@@ -1,10 +1,13 @@
 package com.springcloud.client.delivery.application;
 
 
-import com.springcloud.client.delivery.client.*;
 import com.springcloud.client.delivery.config.OrderCreateEvent;
-import com.springcloud.client.delivery.delivery.Delivery;
-import com.springcloud.client.delivery.delivery.DeliveryStatusEnum;
+import com.springcloud.client.delivery.domain.delivery.Delivery;
+import com.springcloud.client.delivery.domain.delivery.DeliveryStatusEnum;
+import com.springcloud.client.delivery.infrastructure.client.*;
+import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
+import com.springcloud.client.delivery.infrastructure.dto.HubRouteRequest;
+import com.springcloud.client.delivery.infrastructure.dto.UserInfoClientResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -34,6 +37,11 @@ public class OrderCreateListener {
         assert userInfoClientResponse != null;
 
         Delivery delivery = createDelivery(hubClientResponse,userInfoClientResponse);
+
+
+        // 업체 배송 담당자.......
+
+
 
 
 

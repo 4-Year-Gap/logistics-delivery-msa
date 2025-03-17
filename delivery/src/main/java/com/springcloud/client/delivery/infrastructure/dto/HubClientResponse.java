@@ -1,8 +1,8 @@
-package com.springcloud.client.delivery.client;
+package com.springcloud.client.delivery.infrastructure.dto;
 
 
 
-import com.springcloud.client.delivery.delivery.DeliveryHubRoute;
+import com.springcloud.client.delivery.domain.delivery.DeliveryHubRoute;
 import lombok.Getter;
 
 import java.util.List;

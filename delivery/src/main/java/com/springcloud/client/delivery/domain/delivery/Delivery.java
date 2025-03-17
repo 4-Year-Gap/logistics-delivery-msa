@@ -1,4 +1,4 @@
-package com.springcloud.client.delivery.delivery;
+package com.springcloud.client.delivery.domain.delivery;
 
 
 

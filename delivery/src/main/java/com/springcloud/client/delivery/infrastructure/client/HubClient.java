@@ -1,8 +1,10 @@
-package com.springcloud.client.delivery.client;
+package com.springcloud.client.delivery.infrastructure.client;
 
 
 import com.springcloud.client.delivery.common.ApiResponse;
 import com.springcloud.client.delivery.config.FeignConfig;
+import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
+import com.springcloud.client.delivery.infrastructure.dto.HubRouteRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;

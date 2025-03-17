@@ -1,6 +1,6 @@
-package com.springcloud.product.repository;
+package com.springcloud.company.product.repository;
 
-import com.springcloud.product.entity.Product;
+import com.springcloud.company.product.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

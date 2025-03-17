@@ -1,4 +1,4 @@
-package com.springcloud.product.dto;
+package com.springcloud.company.product.dto;
 
 import lombok.Getter;
 import lombok.Setter;

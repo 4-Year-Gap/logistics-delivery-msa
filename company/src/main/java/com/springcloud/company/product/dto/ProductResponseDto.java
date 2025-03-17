@@ -1,6 +1,7 @@
-package com.springcloud.product.dto;
+package com.springcloud.company.product.dto;
 
-import com.springcloud.product.entity.Product;
+import com.springcloud.company.company.entity.Company;
+import com.springcloud.company.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +18,11 @@ public class ProductResponseDto {
     //상품 ID
     private UUID Id;
     //허브 ID
-    private UUID hub_id;
+    private UUID hubId;
     //유저ID
-    private UUID user_id;
+    private UUID userId;
     //업체ID
-    private UUID company_id;
+    private Company company;
     //상품명
     private String productName;
     //상품 가격
@@ -32,9 +33,9 @@ public class ProductResponseDto {
 
     public ProductResponseDto(Product product) {
         this.Id = product.getId();
-        this.hub_id = product.getHubId();
-        this.user_id = product.getUserId();
-        this.company_id = product.getCompanyId();
+        this.hubId = product.getHubId();
+        this.userId = product.getUserId();
+        this.company = product.getCompany();
         this.productName = product.getProductName();
         this.price = product.getPrice();
         this.stock = product.getStock();

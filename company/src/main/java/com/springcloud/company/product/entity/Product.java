@@ -1,6 +1,6 @@
-package com.springcloud.product.entity;
+package com.springcloud.company.product.entity;
 
-import com.springcloud.product.dto.ProductRequestDto;
+import com.springcloud.company.company.entity.Company;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -23,13 +23,13 @@ public class Product extends BaseEntity{
     @Comment("상품 ID")
     private UUID id;
 
-    @Column
-    @Comment("업체 ID")
-    private UUID companyId;
-
-    @Column
-    @Comment("보관 허브ID")
+    @Column(nullable = false)
+    @Comment("보관 허브 ID")
     private UUID hubId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="company_id", nullable = false)
+    private Company company;
 
     @Column
     @Comment("유저 ID")
@@ -47,12 +47,17 @@ public class Product extends BaseEntity{
     @Comment("출고 가능 수량")
     private Integer stock;
 
+
+
+
+
+
     //정적 팩토리 메서드(create 메서드) 사용
-    public static Product create(String productName, Integer price, Integer stock) {
+    public static Product create(String productName, Integer price, Integer stock, UUID userId, Company company) {
         Product product = new Product();
-        product.userId = UUID.randomUUID();
-        product.companyId= UUID.randomUUID();
-        product.hubId = UUID.randomUUID();
+        product.userId = userId;
+        product.company = company;
+        product.hubId = company.getHubId();
         product.productName = productName;
         product.price = price;
         product.stock = stock;

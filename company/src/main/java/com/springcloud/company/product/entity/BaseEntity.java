@@ -1,4 +1,4 @@
-package com.springcloud.product.entity;
+package com.springcloud.company.product.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

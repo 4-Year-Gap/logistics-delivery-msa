@@ -23,12 +23,4 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                         .fetchOne()
         );
     }
-
-    @Override
-    public List<Hub> findAllHubs() {
-        QHub hub = QHub.hub;
-        return queryFactory.selectFrom(hub)
-                .where(hub.isDeleted.eq(false))
-                .fetch();
-    }
 }

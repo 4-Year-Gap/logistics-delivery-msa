@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.infrastructure.client.dto;
+package com.springcloud.client.delivery.client;
 
 import lombok.Getter;
 

@@ -8,13 +8,13 @@ import com.spring_cloud.eureka.client.order.infrastructure.client.HubClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.UserInfoClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 
 import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -57,7 +57,12 @@ public class OrderService {
 
         OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,orderCreateRequest));
 
+//        OrderCreateEvent orderCreateEvent = new OrderCreateEvent(orderEntity.getOrderId(),productClientResponse.getStartHub(),productClientResponse.getEndHub());
+
+
         //배송으로 createdOrderEvent
+
+//        kafkaTemplate.send("order_created",orderCreateEvent);
 
         return orderEntity;
     }
@@ -112,8 +117,11 @@ public class OrderService {
 
     public void createOrderEvent(String orderId) {
 
-        ProducerRecord<String,String> record = new ProducerRecord<>("order_topic","order_Key",orderId);
-        kafkaTemplate.send(record);
+
+        OrderCreateEvent event = new OrderCreateEvent(orderId,UUID.randomUUID(),UUID.randomUUID());
+
+
+        kafkaTemplate.send("order_topic",event.toJson());
 
     }
 }

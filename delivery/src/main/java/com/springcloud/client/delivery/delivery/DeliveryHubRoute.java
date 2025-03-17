@@ -1,6 +1,7 @@
-package com.spring_cloud.eureka.client.order.domain.delivery;
+package com.springcloud.client.delivery.delivery;
 
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubRoute;
+
+import com.springcloud.client.delivery.client.HubRoute;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -30,7 +31,7 @@ public class DeliveryHubRoute {
     private UUID startHub;
     private UUID destinationHub;
     private Integer shipperId;
-    //위에 4개를 허브 서버에서 가지고 오면 될듯함
+
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatusEnum deliveryStatus;

@@ -1,10 +1,8 @@
-package com.spring_cloud.eureka.client.order.infrastructure.client;
+package com.springcloud.client.delivery.client;
 
 
-import com.spring_cloud.eureka.client.order.common.ApiResponse;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubClientResponse;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubRouteRequest;
-import com.spring_cloud.eureka.client.order.infrastructure.config.FeignConfig;
+import com.springcloud.client.delivery.common.ApiResponse;
+import com.springcloud.client.delivery.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,8 +1,7 @@
-package com.spring_cloud.eureka.client.order.domain.delivery;
+package com.springcloud.client.delivery.delivery;
 
 
-import com.spring_cloud.eureka.client.order.domain.BaseEntity;
-import com.spring_cloud.eureka.client.order.infrastructure.client.dto.HubClientResponse;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -59,7 +58,6 @@ public class Delivery extends BaseEntity {
                                   DeliveryStatusEnum deliveryStatusEnum,
                                   UUID startHub, UUID endHub,
                                   String slackId,
-                                  UUID id,
                                   List<DeliveryHubRoute> deliveryHubRouteList)
     {
         return Delivery.builder()

@@ -1,6 +1,6 @@
 package com.springcloud.client.user.util;
 
-import com.springcloud.client.user.domain.UserRole;
+import com.springcloud.client.user.domain.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -17,7 +17,6 @@ import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.UUID;
 
 @Component
 public class JwtUtil {
@@ -26,12 +25,12 @@ public class JwtUtil {
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     // 사용자 권한 값의 KEY
-    public static final String AUTHORIZATION_KEY = "auth";
+    public static final String AUTHORIZATION_KEY = "role";
 
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
 
-    // 토큰 만료시간 (60분)
+    // 토큰 만료 시간 (60분)
     private static final long TOKEN_EXPIRATION_TIME = 60 * 60 * 1000L;
 
     @Value("${jwt.secret.key}")
@@ -52,13 +51,15 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(UUID userId, UserRole role) {
+    public String createToken(User user) {
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(String.valueOf(userId)) // 사용자 식별자 값
-                        .claim(AUTHORIZATION_KEY, role) // 사용자 권한
+                        .setSubject(String.valueOf(user.getUserId())) // 사용자 식별자 값
+                        .claim("username", user.getUsername()) // 사용자 로그인 ID
+                        .claim("slackId", user.getSlackId()) // 사용자 Slack ID
+                        .claim(AUTHORIZATION_KEY, user.getRole()) // 사용자 권한
                         .setExpiration(new Date(date.getTime() + TOKEN_EXPIRATION_TIME)) // 만료 시간
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘
@@ -80,7 +81,7 @@ public class JwtUtil {
     }
 
     public String substringToken(String tokenValue) {
-        // Bearer 다음에 있는 토근 값만 추출
+        // Bearer 다음에 있는 토큰 값만 추출
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7);
         }

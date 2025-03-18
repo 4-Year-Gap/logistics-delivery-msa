@@ -37,7 +37,7 @@ public class UserService {
         }
 
         // JWT를 생성하고 쿠키에 저장한 후 HttpServletResponse에 추가하여 반환
-        String token = jwtUtil.createToken(user.getUserId(), user.getRole());
+        String token = jwtUtil.createToken(user);
         jwtUtil.addJwtToCookie(token, httpServletResponse);
     }
 }

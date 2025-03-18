@@ -2,12 +2,11 @@ package com.springcloud.company.company.controller;
 
 import com.springcloud.company.company.dto.CompanyRequestDto;
 import com.springcloud.company.company.dto.CompanyResponseDto;
+import com.springcloud.company.company.dto.OrderProductRequestDto;
+import com.springcloud.company.company.dto.OrderProductResponseDto;
 import com.springcloud.company.company.service.CompanyService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -26,5 +25,15 @@ public class CompanyController {
         UUID userId = UUID.randomUUID(); // TODO: 임시 데이터
 
         return companyService.createCompany(companyRequestDto, userId);
+    }
+
+    @GetMapping
+    private OrderProductResponseDto getCompanyProductOrder(@RequestBody OrderProductRequestDto requestDto)
+    {
+        UUID recevingCompanyId = requestDto.getRecevingCompanyId();
+        UUID productId = requestDto.getProductId();
+        Integer quantity = requestDto.getQuantity();
+
+        return companyService.readOrderProduct(recevingCompanyId, productId, quantity);
     }
 }

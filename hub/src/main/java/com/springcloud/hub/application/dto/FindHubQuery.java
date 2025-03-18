@@ -1,12 +1,12 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.application.dto;
 
 import com.springcloud.hub.domain.entity.Hub;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record HubDto(UUID id, String name, BigDecimal latitude, BigDecimal longitude) {
-    public HubDto(Hub hub) {
+public record FindHubQuery(UUID id, String name, BigDecimal latitude, BigDecimal longitude) {
+    public FindHubQuery(Hub hub) {
         this(
                 hub.getId(),
                 hub.getName(),

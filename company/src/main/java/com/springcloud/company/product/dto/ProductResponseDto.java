@@ -1,6 +1,5 @@
 package com.springcloud.company.product.dto;
 
-import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -26,10 +26,12 @@ public class DeliveryService {
 
     public Delivery getDelivery(Integer userId, String role, UUID deliveryId) {
 
-//        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
-//                new IllegalArgumentException("Asd")
-//        );
 
-        return null;
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 배송 정보를 찾을 수 없습니다."));
+
+
+
+        return delivery;
     }
 }

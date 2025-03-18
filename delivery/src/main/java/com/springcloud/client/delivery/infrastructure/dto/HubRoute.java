@@ -2,18 +2,27 @@ package com.springcloud.client.delivery.infrastructure.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.UUID;
 
 
 @AllArgsConstructor
 @Getter
+@NoArgsConstructor
+@Setter
 public class HubRoute {
-    private Integer deliverySequence; // 부산 대전 경기
-    private UUID startHub;
-    private UUID destinationHub;
-    public static HubRoute create(Integer deliverySequence,UUID startHub,UUID destinationHub){
-        return new HubRoute(deliverySequence,startHub,destinationHub);
 
-    }
+    private Integer sequenceNumber;
+    private UUID hubId;
+    private String name;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
+    private BigDecimal moveDistance;
+    private LocalTime timeRequired;
+    private BigDecimal totalDistance;
+
 }

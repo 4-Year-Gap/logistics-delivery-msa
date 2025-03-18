@@ -1,32 +1,22 @@
 package com.springcloud.client.delivery.infrastructure.dto;
 
-
-
-import com.springcloud.client.delivery.domain.delivery.DeliveryHubRoute;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
-public class HubClientResponse {
-    private List<HubRoute> shortestRoute;
-    private Long estimatedTime;
-    private Long estimatedDistance;
+@Setter
+public class HubClientResponse<T> {
 
-    @Override
-    public String toString() {
-        return "HubClientResponse{" +
-                "shortestRoute=" + shortestRoute +
-                ", estimatedTime=" + estimatedTime +
-                ", estimatedDistance=" + estimatedDistance +
-                '}';
-    }
-
-    public List<DeliveryHubRoute> fromHubRoute() {
-        return this.shortestRoute.stream()
-                .map(DeliveryHubRoute::create)
-                .collect(Collectors.toList());
-    }
+    private Integer code;
+    private String status;
+    private String message;
+    private T data;
 
 }

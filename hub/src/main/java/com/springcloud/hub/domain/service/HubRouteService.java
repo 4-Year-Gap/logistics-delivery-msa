@@ -1,10 +1,11 @@
 package com.springcloud.hub.domain.service;
 
-import com.springcloud.hub.application.HubDto;
-import com.springcloud.hub.application.HubRouteResultDto;
-import com.springcloud.hub.application.RouteInfo;
+import com.springcloud.hub.application.dto.FindHubQuery;
+import com.springcloud.hub.application.dto.FindNaverRouteQuery;
+import com.springcloud.hub.application.dto.GetHubRouteQuery;
+import com.springcloud.hub.application.dto.ListHubQuery;
 import com.springcloud.hub.domain.repository.HubRouteReader;
-import com.springcloud.hub.infrastructure.dto.HubRouteDTO;
+import com.springcloud.hub.infrastructure.dto.FindHubRouteQuery;
 import org.springframework.stereotype.Service;
 
 import com.springcloud.hub.domain.entity.Hub;
@@ -22,13 +23,13 @@ public class HubRouteService {
     /**
      * 경로 정보를 기반으로 HubRoute 엔티티를 생성
      */
-    public HubRoute createHubRoute(Hub startHub, Hub goalHub, RouteInfo routeInfo) {
+    public HubRoute createHubRoute(Hub startHub, Hub goalHub, FindNaverRouteQuery findNaverRouteQuery) {
         return HubRoute.builder()
                 .Id(UUID.randomUUID())
                 .fromHub(startHub)
                 .toHub(goalHub)
-                .timeRequired(routeInfo.timeRequired())
-                .moveDistance(routeInfo.moveDistance())
+                .timeRequired(findNaverRouteQuery.timeRequired())
+                .moveDistance(findNaverRouteQuery.moveDistance())
                 .isDeleted(false)
                 .build();
     }
@@ -36,36 +37,36 @@ public class HubRouteService {
     /**
      * 양방향 HubRoute 생성
      */
-    public List<HubRoute> createBidirectionalRoutes(Hub startHub, Hub goalHub, RouteInfo forwardRouteInfo, RouteInfo backwardRouteInfo) {
-        HubRoute forwardRoute = createHubRoute(startHub, goalHub, forwardRouteInfo);
-        HubRoute backwardRoute = createHubRoute(goalHub, startHub, backwardRouteInfo);
+    public List<HubRoute> createBidirectionalRoutes(Hub startHub, Hub goalHub, FindNaverRouteQuery forwardFindNaverRouteQuery, FindNaverRouteQuery backwardFindNaverRouteQuery) {
+        HubRoute forwardRoute = createHubRoute(startHub, goalHub, forwardFindNaverRouteQuery);
+        HubRoute backwardRoute = createHubRoute(goalHub, startHub, backwardFindNaverRouteQuery);
         return Arrays.asList(forwardRoute, backwardRoute);
     }
 
     /**
      * 다익스트라 알고리즘
      */
-    public List<HubRouteResultDto> dijkstra(HubDto start, HubDto end) {
-        Map<HubDto, BigDecimal> distances = new HashMap<>();
-        Map<HubDto, HubDto> previous = new HashMap<>();
-        Map<HubDto, HubRouteDTO> routeInfo = new HashMap<>();  // 경로 정보를 저장할 맵
-        PriorityQueue<HubDto> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
+    public List<GetHubRouteQuery> dijkstra(FindHubQuery start, FindHubQuery end) {
+        Map<FindHubQuery, BigDecimal> distances = new HashMap<>();
+        Map<FindHubQuery, FindHubQuery> previous = new HashMap<>();
+        Map<FindHubQuery, FindHubRouteQuery> routeInfo = new HashMap<>();  // 경로 정보를 저장할 맵
+        PriorityQueue<FindHubQuery> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
 
         // 초기 거리 설정
         distances.put(start, BigDecimal.ZERO);
         queue.add(start);
 
         while (!queue.isEmpty()) {
-            HubDto current = queue.poll();
+            FindHubQuery current = queue.poll();
 
             // 목적지 도착 시 종료
             if (current.equals(end)) break;
 
             // 현재 허브에서 이동 가능한 경로 탐색
-            List<HubRouteDTO> routes = hubRouteReader.findByFromHubWithToHub(current);
+            List<FindHubRouteQuery> routes = hubRouteReader.findByFromHubWithToHub(current);
 
-            for (HubRouteDTO route : routes) {
-                HubDto neighbor = new HubDto(route.getToHub());
+            for (FindHubRouteQuery route : routes) {
+                FindHubQuery neighbor = new FindHubQuery(route.getToHub());
                 //현재까지 이동한 거리 + 이번에 이동할 거리를 더해서 새로운 거리를 계산
                 BigDecimal newDist = distances.get(current).add(route.getMoveDistance());
 
@@ -81,23 +82,23 @@ public class HubRouteService {
         }
 
         // 경로 역추적해서 list에 저장
-        List<HubDto> path = new ArrayList<>();
-        for (HubDto at = end; at != null; at = previous.get(at)) {
+        List<FindHubQuery> path = new ArrayList<>();
+        for (FindHubQuery at = end; at != null; at = previous.get(at)) {
             path.add(at);
         }
         Collections.reverse(path);
 
         // 결과 DTO 생성
-        List<HubRouteResultDto> resultPath = new ArrayList<>();
+        List<GetHubRouteQuery> resultPath = new ArrayList<>();
         for (int i = 0; i < path.size(); i++) {
-            HubDto hub = path.get(i);
+            FindHubQuery hub = path.get(i);
 
             if (i == 0) {
                 // 첫 번째 허브는 이전 경로 정보가 없음
-                resultPath.add(new HubRouteResultDto(hub, i + 1));
+                resultPath.add(new GetHubRouteQuery(hub, i + 1));
             } else {
-                HubRouteDTO routeDetails = routeInfo.get(hub);
-                resultPath.add(new HubRouteResultDto(
+                FindHubRouteQuery routeDetails = routeInfo.get(hub);
+                resultPath.add(new GetHubRouteQuery(
                         hub,
                         i + 1,  // 시퀀스 번호
                         routeDetails.getMoveDistance(),
@@ -108,5 +109,24 @@ public class HubRouteService {
         }
 
         return resultPath;
+    }
+
+    /**
+     * 자신을 제외한 모든 허브 접근 리스트
+     */
+    public List<Map<String, FindHubQuery>> getRoutesExcludingSelf(ListHubQuery hubs) {
+        List<Map<String, FindHubQuery>> results = new ArrayList<>();
+
+        for (FindHubQuery startHub : hubs.hubs()) {
+            for (FindHubQuery goalHub : hubs.hubs()) {
+                if (!startHub.id().equals(goalHub.id())) { // 자기 자신 제외
+                    Map<String, FindHubQuery> routeMap = new HashMap<>();
+                    routeMap.put("startHub", startHub);
+                    routeMap.put("endHub", goalHub);
+                    results.add(routeMap);
+                }
+            }
+        }
+        return results;
     }
 }

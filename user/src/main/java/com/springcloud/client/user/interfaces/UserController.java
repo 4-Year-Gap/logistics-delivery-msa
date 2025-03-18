@@ -18,7 +18,7 @@ public class UserController {
     private final UserFacade userFacade;
 
     @PostMapping("/signup")
-    public ResponseEntity<SignupDto.SignupResponse> signup(@RequestBody @Valid SignupDto.SignupRequest request) {
+    public ResponseEntity<SignupDto.SignupResponse> signUp(@RequestBody @Valid SignupDto.SignupRequest request) {
         SignupCommand command = request.toCommand();
         SignupInfo info = userFacade.signUp(command);
         SignupDto.SignupResponse response = new SignupDto.SignupResponse(info);

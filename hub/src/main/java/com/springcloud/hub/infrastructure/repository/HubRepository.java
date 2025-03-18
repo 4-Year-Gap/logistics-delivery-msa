@@ -1,4 +1,4 @@
-package com.springcloud.hub.domain.repository;
+package com.springcloud.hub.infrastructure.repository;
 
 import com.springcloud.hub.domain.entity.Hub;
 import org.springframework.data.jpa.repository.JpaRepository;

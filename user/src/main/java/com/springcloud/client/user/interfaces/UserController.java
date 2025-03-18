@@ -1,8 +1,10 @@
 package com.springcloud.client.user.interfaces;
 
 import com.springcloud.client.user.application.UserFacade;
+import com.springcloud.client.user.domain.SigninCommand;
 import com.springcloud.client.user.domain.SignupCommand;
 import com.springcloud.client.user.domain.SignupInfo;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +26,12 @@ public class UserController {
         SignupInfo info = userFacade.signUp(command);
         SignupDto.SignupResponse response = new SignupDto.SignupResponse(info);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<Void> signin(@RequestBody SigninDto.SigninRequest request, HttpServletResponse httpServletResponse) {
+        SigninCommand command = request.toCommand();
+        userFacade.signIn(command, httpServletResponse);
+        return ResponseEntity.noContent().build();
     }
 }

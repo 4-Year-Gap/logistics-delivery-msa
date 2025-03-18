@@ -1,7 +1,6 @@
-package com.springcloud.hub.infrastructure.api;
+package com.springcloud.hub.infrastructure.external;
 
 import com.springcloud.hub.config.NaverMapProperties;
-import com.springcloud.hub.domain.api.NaverMapClient;
 import com.springcloud.hub.interfaces.exception.CustomTimeoutException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +12,7 @@ import java.util.concurrent.TimeoutException;
 
 @Component
 @RequiredArgsConstructor
-public class NaverMapApiClient implements NaverMapClient {
+public class NaverMapClientImpl implements NaverMapClient {
     private final WebClient webClient;
     private final NaverMapProperties properties;
 
@@ -24,8 +23,8 @@ public class NaverMapApiClient implements NaverMapClient {
 
         return webClient.get()
                 .uri(url)
-                .header("x-ncp-apigw-api-key-id", properties.getKeyId())
-                .header("x-ncp-apigw-api-key", properties.getKeyValue())
+                .header("x-ncp-apigw-api-key-id", properties.getKey().getId())
+                .header("x-ncp-apigw-api-key", properties.getKey().getValue())
                 .retrieve()
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(5))

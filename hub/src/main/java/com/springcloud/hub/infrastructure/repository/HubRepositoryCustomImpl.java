@@ -1,9 +1,8 @@
-package com.springcloud.hub.infrastructure.querydsl;
+package com.springcloud.hub.infrastructure.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.entity.QHub;
-import com.springcloud.hub.domain.repository.HubRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -23,13 +22,5 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                         .where(hub.Id.eq(hubId).and(hub.isDeleted.eq(false)))
                         .fetchOne()
         );
-    }
-
-    @Override
-    public List<Hub> findAllHubs() {
-        QHub hub = QHub.hub;
-        return queryFactory.selectFrom(hub)
-                .where(hub.isDeleted.eq(false))
-                .fetch();
     }
 }

@@ -1,4 +1,4 @@
-package com.springcloud.client.gateway;
+package com.springcloud.client.gateway.filter;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

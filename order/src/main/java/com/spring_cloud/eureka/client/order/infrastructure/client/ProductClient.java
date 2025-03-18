@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.UUID;
 
 @Component
-@FeignClient(name = "product-service",configuration = FeignConfig.class)
+@FeignClient(name = "company-service",configuration = FeignConfig.class)
 public interface ProductClient {
 
-    @GetMapping("/api/products/{productId}")
-    ApiResponse<ProductClientResponse> getProduct(@PathVariable("productId") UUID productId , @RequestBody ProductClientRequest request);
+    @GetMapping("/api/companies")
+    ProductClientResponse getProduct(@RequestBody ProductClientRequest request);
 
 }

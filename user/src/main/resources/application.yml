@@ -1,0 +1,48 @@
+server:
+  port: 19099
+
+
+spring:
+  application:
+    name: user-service
+
+
+  datasource:
+    url: jdbc:mysql://${Mysql_host}:3306/user
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${Mysql_name}
+    password: ${Mysql_password}
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+
+  data:
+    redis:
+      host: ${Redis_host}
+      port: 6379
+      username: ${Redis_name}
+      password: ${Redis_password}
+
+  kafka:
+    host: ${Kafka_host}
+    username: ${Kafka_name}
+    password: ${Kafka_password}
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/
+
+
+jwt:
+  secret:
+    key: ${Jwt_secret_key}

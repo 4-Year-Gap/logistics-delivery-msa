@@ -2,6 +2,7 @@ package com.spring_cloud.eureka.client.order.application.service;
 
 
 
+import com.querydsl.core.types.Order;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
@@ -35,14 +36,8 @@ public class OrderService {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(orderCreateRequest);
-//        ProductClientResponse productClientResponse = productClient.getProduct(orderCreateRequest.getProductId(), productClientRequest).data();
-       //니중에 삭제
-        ProductClientResponse productClientResponse = new ProductClientResponse();
-        productClientResponse.setEndHub(UUID.randomUUID());
-        productClientResponse.setStartHub(UUID.randomUUID());
-        productClientResponse.setProductId(UUID.randomUUID());
-        productClientResponse.setStock(100);
-        // 나중에 주석 해제
+        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
+
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
 
         //나중에 삭제
@@ -53,15 +48,27 @@ public class OrderService {
 
         OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,orderCreateRequest));
 
-//        OrderCreateEvent orderCreateEvent = new OrderCreateEvent(orderEntity.getOrderId(),productClientResponse.getStartHub(),productClientResponse.getEndHub());
 
+        assert productClientResponse != null;
+        OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,orderCreateRequest,productClientResponse);
 
-        //배송으로 createdOrderEvent
-
-//        kafkaTemplate.send("order_created",orderCreateEvent);
+        kafkaTemplate.send("order_topic",orderCreateEvent.toJson());
+//        kafkaTemplate.send("product_decrease",orderCreateEvent.toJson());
 
         return orderEntity;
     }
+
+    private OrderCreateEvent createOrderEvent(OrderEntity orderEntity, OrderCreateRequest orderCreateRequest, ProductClientResponse productClientResponse) {
+
+        return OrderCreateEvent.create(
+                orderEntity.getOrderId(),
+                productClientResponse.getStartHub(),
+                productClientResponse.getEndHub(),
+                productClientResponse.getProductId(),
+                orderCreateRequest.getProductQuantity()
+        );
+    }
+
 
     private OrderEntity orderCreate(UserInfoClientResponse userInfoClientResponse, OrderCreateRequest orderCreateRequest) {
         return OrderEntity.create(
@@ -110,14 +117,4 @@ public class OrderService {
 //
 //    }
 
-
-    public void createOrderEvent(String orderId) {
-
-
-        OrderCreateEvent event = new OrderCreateEvent(orderId,UUID.randomUUID(),UUID.randomUUID());
-
-
-        kafkaTemplate.send("order_topic",event.toJson());
-
-    }
 }

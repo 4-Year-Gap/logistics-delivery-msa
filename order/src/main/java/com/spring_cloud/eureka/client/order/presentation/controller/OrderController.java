@@ -63,13 +63,4 @@ public class OrderController {
         return null;
     }
 
-
-    @GetMapping("/kafkaTest/{testOrderId}")
-    public ApiResponse<?> kafkaTest(@PathVariable(name = "testOrderId") String orderId){
-
-
-        orderService.createOrderEvent(orderId);
-        return ApiResponse.ok("이벤트 발생 성공");
-    }
-
 }

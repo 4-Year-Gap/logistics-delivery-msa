@@ -24,12 +24,4 @@ public class ProductClientRequest {
                 .quantity(orderCreateRequest.getProductQuantity())
                 .build();
     }
-
-    @Override
-    public String toString() {
-        return "ProductClientRequest{" +
-                "receivingCompanyId=" + receivingCompanyId +
-                ", productId=" + productId +
-                '}';
-    }
 }

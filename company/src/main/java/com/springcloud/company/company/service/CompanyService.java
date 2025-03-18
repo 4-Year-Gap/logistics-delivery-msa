@@ -7,10 +7,8 @@ import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

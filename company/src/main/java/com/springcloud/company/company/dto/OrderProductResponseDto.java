@@ -1,6 +1,5 @@
 package com.springcloud.company.company.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

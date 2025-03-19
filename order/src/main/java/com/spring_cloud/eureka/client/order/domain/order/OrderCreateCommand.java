@@ -1,12 +1,14 @@
-package com.spring_cloud.eureka.client.order.presentation.dto.request;
+package com.spring_cloud.eureka.client.order.domain.order;
 
 
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.UUID;
 
+@Builder
 @Getter
-public  class OrderCreateRequest{
+public class OrderCreateCommand {
 
     private UUID supplierId;// 제품 공급 업체
     private UUID receivingCompanyId;// 제품 수요 업체
@@ -15,5 +17,6 @@ public  class OrderCreateRequest{
     private Integer productQuantity; // 배송 수량
     private Integer productPrice; // 총합 가격
     private String requestMessage;
+    private Integer userId;
 
 }

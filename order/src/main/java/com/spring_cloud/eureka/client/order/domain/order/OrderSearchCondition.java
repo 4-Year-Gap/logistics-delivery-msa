@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.application.dto;
+package com.spring_cloud.eureka.client.order.domain.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

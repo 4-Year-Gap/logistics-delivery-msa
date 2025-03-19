@@ -15,10 +15,10 @@ spring:
       # 이 부분이 없어서 테이블 반영이 안되었음. update 외에 설정 가능(create 등)
       ddl-auto: update
 
-#  kafka:
-#    host: ${Kafka_host}
-#    username: ${Kafka_name}
-#    password: ${Kafka_password}
+  kafka:
+    host: ${Kafka_host}
+    username: ${Kafka_name}
+    password: ${Kafka_password}
 
 #  data:
 #    redis:

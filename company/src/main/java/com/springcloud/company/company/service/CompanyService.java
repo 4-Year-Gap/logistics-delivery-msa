@@ -6,6 +6,7 @@ import com.springcloud.company.company.dto.OrderProductResponseDto;
 import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
+import com.springcloud.company.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final ProductRepository productRepository;
 
     public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
         Company company = Company.create(
@@ -54,5 +56,11 @@ public class CompanyService {
     //상품 ID로 업체 조회
     public Company getCompanyByProductId(UUID productId){
         return companyRepository.findByProducts_Id(productId).orElseThrow();
+    }
+
+    public void deleteProduct(UUID productId) {
+        Company company = getCompanyByProductId(productId);
+        company.removeProductByProductId(productId);
+        companyRepository.save(company);
     }
 }

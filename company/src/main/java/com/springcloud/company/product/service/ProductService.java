@@ -14,9 +14,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -95,5 +93,42 @@ public class ProductService {
 
         //상품 재고 추가
         //상품 가격 수정
+    }
+
+    public List<ProductResponseDto> getAllProduct() {
+        List<Product> productList = productRepository.findAll();
+
+        return productList.stream()
+                .map(ProductResponseDto::new)
+                .toList();
+    }
+
+
+    public ProductResponseDto getProduct(UUID productId) {
+        Company company = companyService.getCompanyByProductId(productId);
+
+        Product product = company.getProducts().stream()
+                .filter( p -> p.getId().equals(productId))
+                .findAny()
+                .orElseThrow();
+
+        return new ProductResponseDto(product);
+    }
+
+    public List<ProductResponseDto> getProducts(UUID userId) {
+        Company company = companyRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저 ID에 대한 회사 정보가 없습니다."));
+
+        List<Product> productList = company.getProducts();
+
+        return productList.stream()
+                .map(ProductResponseDto::new)
+                .toList();
+
+
+    }
+
+    public void deleteProduct(UUID productId) {
+        companyService.deleteProduct(productId);
     }
 }

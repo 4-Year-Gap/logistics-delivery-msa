@@ -65,4 +65,9 @@ public class Company extends BaseEntity{
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 업체에 상품이 없습니다."));
     }
+
+    public void removeProductByProductId(UUID productId) {
+        Product product = getProductById(productId);
+        products.remove(product);
+    }
 }

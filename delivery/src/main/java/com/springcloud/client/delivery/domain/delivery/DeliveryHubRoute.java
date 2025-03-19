@@ -35,11 +35,11 @@ public class DeliveryHubRoute {
 
 
 
-    public static DeliveryHubRoute to(HubRoute hubRoute){
+    public static DeliveryHubRoute to(HubRoute hubRoute,UUID destinationHub){
         return DeliveryHubRoute.builder()
                 .deliverySequence(hubRoute.getSequenceNumber())
-                .startHub(UUID.randomUUID())
-                .destinationHub(UUID.randomUUID())
+                .startHub(hubRoute.getHubId())
+                .destinationHub(destinationHub)
                 .deliveryStatus(DeliveryStatusEnum.NOT_ACCEPTED)
                 .build();
 
@@ -50,7 +50,7 @@ public class DeliveryHubRoute {
         this.shipperId = shipperId;
     }
 
-    public void changeStatusToAccept() {
-        this.deliveryStatus = DeliveryStatusEnum.ACCEPTED;
+    public void changeStatus(DeliveryStatusEnum deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
     }
 }

@@ -14,9 +14,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -68,14 +71,22 @@ public class DeliveryService {
 
 
     }
+
     private List<DeliveryHubRoute> createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse) {
-        return routeList.stream()
-                .map(DeliveryHubRoute::to)
-                .peek(route -> {
-                    if (route.getDeliverySequence() == 1) {
-                        route.setShipperId(deliveryDriverClientResponse.getDeliveryDriverId());
-                        route.changeStatusToAccept();
+        List<HubRoute> sortedRoutes = routeList.stream()
+                .sorted(Comparator.comparingInt(HubRoute::getSequenceNumber))
+                .toList();
+
+        return IntStream.range(0, sortedRoutes.size())
+                .mapToObj(sequence -> {
+                    HubRoute currentRoute = sortedRoutes.get(sequence);
+                    UUID destinationHubId = (sequence + 1 < sortedRoutes.size()) ? sortedRoutes.get(sequence + 1).getHubId() : currentRoute.getHubId();
+                    DeliveryHubRoute hubRoute = DeliveryHubRoute.to(currentRoute, destinationHubId);
+                    if (sequence == 0) {
+                        hubRoute.changeStatus(DeliveryStatusEnum.WAITING);
+                        hubRoute.setShipperId(deliveryDriverClientResponse.getDeliveryDriverId());
                     }
+                    return hubRoute;
                 })
                 .collect(Collectors.toList());
     }

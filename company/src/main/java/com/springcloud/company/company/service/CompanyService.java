@@ -50,4 +50,9 @@ public class CompanyService {
 
         return new OrderProductResponseDto(supplierCompany.getHubId(), product.getId(), receivingCompany.getHubId());
     }
+
+    //상품 ID로 업체 조회
+    public Company getCompanyByProductId(UUID productId){
+        return companyRepository.findByProducts_Id(productId).orElseThrow();
+    }
 }

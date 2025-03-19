@@ -32,7 +32,7 @@ public class ProductController {
     @PatchMapping("/deduck")
     public UpdateProductStockResponseDto DeductProductStock(@RequestBody UpdateProductStockRequestDto RequestDto
     ){
-        return productService.updateStock(RequestDto);
+        return productService.deduckStock(RequestDto);
     }
 
 

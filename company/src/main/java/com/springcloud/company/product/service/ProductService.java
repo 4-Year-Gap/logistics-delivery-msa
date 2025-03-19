@@ -45,7 +45,7 @@ public class ProductService {
     }
 
     @Transactional
-    public UpdateProductStockResponseDto updateStock(UpdateProductStockRequestDto requestDto) {
+    public UpdateProductStockResponseDto deduckStock(UpdateProductStockRequestDto requestDto) {
         //상품의 ID로 Company불러옴
         Company company = companyService.getCompanyByProductId(requestDto.getProductId());
 

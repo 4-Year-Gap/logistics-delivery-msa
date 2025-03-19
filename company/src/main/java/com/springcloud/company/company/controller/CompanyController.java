@@ -30,7 +30,7 @@ public class CompanyController {
     @GetMapping
     private OrderProductResponseDto getCompanyProductOrder(@RequestBody OrderProductRequestDto requestDto)
     {
-        UUID recevingCompanyId = requestDto.getReceivingCompanyId();
+        UUID receivingCompanyId = requestDto.getReceivingCompanyId();
         UUID productId = requestDto.getProductId();
         Integer quantity = requestDto.getQuantity();
 

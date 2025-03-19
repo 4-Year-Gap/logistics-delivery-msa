@@ -49,7 +49,7 @@ public class Product extends BaseEntity{
 
 
 
-
+    //companyId에 맞는 product 가져오기
 
 
     //정적 팩토리 메서드(create 메서드) 사용
@@ -62,5 +62,12 @@ public class Product extends BaseEntity{
         product.price = price;
         product.stock = stock;
         return product;
+    }
+
+    public void deduct(int quantity) {
+        if (this.stock < quantity) {
+            throw new IllegalArgumentException("재고 부족");
+        }
+        this.stock -= quantity; // 재고 차감
     }
 }

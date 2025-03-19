@@ -2,12 +2,12 @@ package com.springcloud.company.product.controller;
 
 import com.springcloud.company.product.dto.ProductRequestDto;
 import com.springcloud.company.product.dto.ProductResponseDto;
+import com.springcloud.company.product.dto.UpdateProductStockRequestDto;
+import com.springcloud.company.product.dto.UpdateProductStockResponseDto;
 import com.springcloud.company.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Description;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -27,4 +27,13 @@ public class ProductController {
         //응답 보내기
         return productService.createProduct(requestDto,userId);
     }
+
+    @Description("주문 요청 후 재고 차감")
+    @PatchMapping("/deduck")
+    public UpdateProductStockResponseDto DeductProductStock(@RequestBody UpdateProductStockRequestDto RequestDto
+    ){
+        return productService.deduckStock(RequestDto);
+    }
+
+
 }

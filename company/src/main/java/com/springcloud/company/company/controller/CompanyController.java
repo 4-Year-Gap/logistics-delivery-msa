@@ -36,4 +36,6 @@ public class CompanyController {
 
         return companyService.readOrderProduct(receivingCompanyId, productId, quantity);
     }
+
+
 }

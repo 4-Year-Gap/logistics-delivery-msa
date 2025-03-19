@@ -1,6 +1,6 @@
 package com.springcloud.hub.infrastructure.external;
 
-import com.springcloud.hub.application.HubRouteResultDto;
+import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import com.springcloud.hub.interfaces.exception.ResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @FeignClient(name = "hub-service")
 public interface HubRouteClient {
     @GetMapping("/hub/routes/shortest-path")
-    ResponseEntity<ResponseDto<List<HubRouteResultDto>>> findShortestPath(
+    ResponseEntity<ResponseDto<List<GetHubRouteQuery>>> findShortestPath(
             @RequestParam UUID startHubId,
             @RequestParam UUID goalHubId);
 }

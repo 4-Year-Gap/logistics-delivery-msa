@@ -1,4 +1,4 @@
-package com.springcloud.hub.application;
+package com.springcloud.hub.application.dto;
 
 import com.springcloud.hub.domain.entity.HubRoute;
 
@@ -6,14 +6,14 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.UUID;
 
-public record HubRouteCommand(
+public record CreateHubRouteCommand(
         UUID id,
         UUID toHubId,
         UUID fromHubId,
         LocalTime timeRequired,
         BigDecimal moveDistance
 ) {
-    public HubRouteCommand(HubRoute route) {
+    public CreateHubRouteCommand(HubRoute route) {
         this(
                 route.getId(),
                 route.getToHub().getId(),

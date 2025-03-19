@@ -4,11 +4,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.entity.QHub;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 @RequiredArgsConstructor
 public class HubRepositoryCustomImpl implements HubRepositoryCustom {
     private final JPAQueryFactory queryFactory;
@@ -22,5 +24,13 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                         .where(hub.Id.eq(hubId).and(hub.isDeleted.eq(false)))
                         .fetchOne()
         );
+    }
+
+    @Override
+    public List<Hub> findAllHubs() {
+        QHub hub = QHub.hub;
+        return queryFactory.selectFrom(hub)
+                .where(hub.isDeleted.eq(false))
+                .fetch();
     }
 }

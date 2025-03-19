@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HubRouteDTO {
+public class FindHubRouteQuery {
     private UUID id;
     private UUID toHubId;
     private UUID fromHubId;

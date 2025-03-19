@@ -66,7 +66,7 @@ public class HubRouteService {
             List<FindHubRouteQuery> routes = hubRouteReader.findByFromHubWithToHub(current);
 
             for (FindHubRouteQuery route : routes) {
-                FindHubQuery neighbor = new FindHubQuery(route.getToHub());
+                FindHubQuery neighbor = FindHubQuery.fromFindHubQuery(route.getToHub());
                 //현재까지 이동한 거리 + 이번에 이동할 거리를 더해서 새로운 거리를 계산
                 BigDecimal newDist = distances.get(current).add(route.getMoveDistance());
 

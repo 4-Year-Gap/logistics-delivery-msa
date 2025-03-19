@@ -84,4 +84,6 @@ public class HubRouteRepositoryCustomImpl implements HubRouteRepositoryCustom {
 
         return HubRouteListCommand.fromEntities(savedRoutes);
     }
+
+
 }

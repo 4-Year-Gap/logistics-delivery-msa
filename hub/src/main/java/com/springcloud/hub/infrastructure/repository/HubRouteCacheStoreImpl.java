@@ -3,7 +3,7 @@ package com.springcloud.hub.infrastructure.repository;
 import com.springcloud.hub.application.dto.FindHubQuery;
 import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import com.springcloud.hub.domain.repository.HubRouteCacheStore;
-import com.springcloud.hub.interfaces.FindHubRouteRequest;
+import com.springcloud.hub.interfaces.dto.FindHubRouteRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 

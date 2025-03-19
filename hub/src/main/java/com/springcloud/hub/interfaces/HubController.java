@@ -1,0 +1,56 @@
+package com.springcloud.hub.interfaces;
+
+import com.springcloud.hub.application.dto.FindAddressQuery;
+import com.springcloud.hub.application.dto.FindHubQuery;
+import com.springcloud.hub.application.dto.ListHubQuery;
+import com.springcloud.hub.application.service.HubFacade;
+import com.springcloud.hub.interfaces.dto.CreateHubRequest;
+import com.springcloud.hub.interfaces.dto.DeleteHubRequest;
+import com.springcloud.hub.interfaces.dto.FindHubRequest;
+import com.springcloud.hub.interfaces.dto.UpdateHubRequest;
+import com.springcloud.hub.interfaces.exception.ResponseDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/hub")
+@RequiredArgsConstructor
+public class HubController {
+
+    private final HubFacade hubFacade;
+
+    @PostMapping
+    public ResponseEntity<ResponseDto<FindHubQuery>> createHub(
+            @RequestBody CreateHubRequest requestDto) {
+
+        FindHubQuery findHubQuery = hubFacade.createHub(requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(findHubQuery));
+    }
+
+    @GetMapping
+    public ResponseEntity<ResponseDto<ListHubQuery>> findHubs(
+            @ModelAttribute FindHubRequest requestDto, Pageable pageable) {
+
+        ListHubQuery hubs = hubFacade.findHubs(requestDto, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(hubs));
+    }
+
+    @PatchMapping
+    public ResponseEntity<ResponseDto<FindHubQuery>> updateHub(
+            @RequestBody UpdateHubRequest requestDto) {
+
+        FindHubQuery findHubQuery = hubFacade.updateHub(requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(findHubQuery));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ResponseDto<String>> deleteHub(
+            @RequestBody DeleteHubRequest requestDto) {
+
+        hubFacade.deleteHub(requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success());
+    }
+}

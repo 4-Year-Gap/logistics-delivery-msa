@@ -1,4 +1,4 @@
-package com.springcloud.hub.interfaces;
+package com.springcloud.hub.interfaces.dto;
 
 import java.util.UUID;
 

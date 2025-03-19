@@ -8,6 +8,7 @@ import com.springcloud.company.product.dto.ProductResponseDto;
 import com.springcloud.company.product.dto.UpdateProductStockRequestDto;
 import com.springcloud.company.product.dto.UpdateProductStockResponseDto;
 import com.springcloud.company.product.entity.Product;
+import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.repository.ProductRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -72,6 +73,27 @@ public class ProductService {
 
     }
 
+    @Transactional
+    public void deduckStock(OrderCreateEvent orderCreateEvent) {
+        //재고 차감
+        Company company = companyService.getCompanyByProductId(orderCreateEvent.getProductId());
+
+        Optional<Product> optionalProduct = company.getProducts().stream()
+                .filter(p -> p.getId().equals(orderCreateEvent.getProductId()))
+                .findAny();
 
 
+        Product product = optionalProduct.orElseThrow(() -> new NoSuchElementException("Product not found"));
+
+        // 상품 도메인 재고차감 로직
+        product.deduct(orderCreateEvent.getProductQuantity());
+
+        // DB 반영
+        Product save = productRepository.save(product);
+
+        //동시성 문제
+
+        //상품 재고 추가
+        //상품 가격 수정
+    }
 }

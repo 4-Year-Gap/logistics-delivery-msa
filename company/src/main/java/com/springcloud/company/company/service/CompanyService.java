@@ -30,7 +30,7 @@ public class CompanyService {
     }
 
 
-    public OrderProductResponseDto readOrderProduct(UUID recevingCompanyId, UUID productId, Integer quantity) {
+    public OrderProductResponseDto readOrderProduct(UUID receivingCompanyId, UUID productId, Integer quantity) {
         //공급 업체 조회하기
         Company supplierCompany =  companyRepository.findByProducts_Id(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품을 가진 공급 업체가 없습니다."));
@@ -44,7 +44,7 @@ public class CompanyService {
         }
 
         // 4. 수령 업체 조회 (예외 처리 추가)
-        Company receivingCompany = companyRepository.findById(recevingCompanyId)
+        Company receivingCompany = companyRepository.findById(receivingCompanyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 수령 업체를 찾을 수 없습니다."));
 
 

@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: company-service
+
+  datasource:
+    url: jdbc:mysql://${Mysql_host}:3306/company
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${Mysql_name}
+    password: ${Mysql_password}
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      # 이 부분이 없어서 테이블 반영이 안되었음. update 외에 설정 가능(create 등)
+      ddl-auto: update
+
+#  kafka:
+#    host: ${Kafka_host}
+#    username: ${Kafka_name}
+#    password: ${Kafka_password}
+
+#  data:
+#    redis:
+#      host: ${Redis_host}
+#      port: 6379
+#      username: ${Redis_name}
+#      password: ${Redis_password}
+
+
+server:
+  port: 19092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/
+  instance:
+    hostname: ${My_host}
+    securePortEnabled: true
+    nonSecurePortEnabled: false
+    securePort: 443
+    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: https://${eureka.instance.hostname}/actuator/heal

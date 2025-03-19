@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.infrastructure.config;
+package com.spring_cloud.eureka.client.order.config;
 
 
 import feign.RequestInterceptor;

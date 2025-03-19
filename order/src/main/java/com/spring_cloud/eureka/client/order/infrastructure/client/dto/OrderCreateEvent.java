@@ -36,7 +36,6 @@ public class OrderCreateEvent implements Serializer {
         );
     }
 
-
     @Override
     public byte[] serialize(String s, Object data) {
         try {

@@ -28,3 +28,9 @@ eureka:
   client:
     service-url:
       defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/
+
+kafka:
+  event:
+    name:
+      order-create: order_topic
+      product_decrease: product_decrease

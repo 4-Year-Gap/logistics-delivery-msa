@@ -10,6 +10,7 @@ import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepos
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
     private final KafkaTemplate<String,OrderCreateEvent> kafkaTemplate;
+
+    @Value("${kafka.event.name.order-create}")
+    private String ORDER_CREATE_TOPIC;
+
+    @Value("${kafka.event.name.product_decrease}")
+    private String PRODUCT_DECREASE_QUEUE;
+
+    private String KEY_PREFIX = "ORDER_ID : ";
 
     @Transactional
     public OrderEntity createOrder(OrderCreateCommand command) {
@@ -52,9 +61,8 @@ public class OrderService {
         OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,command,productClientResponse);
 
 
-
-        kafkaTemplate.send("order_topic","asd",orderCreateEvent);
-//        kafkaTemplate.send("product_decrease",orderCreateEvent.toJson());
+        kafkaTemplate.send(ORDER_CREATE_TOPIC,KEY_PREFIX + orderCreateEvent.getOrderId(),orderCreateEvent);
+//        kafkaTemplate.send("product_decrease",orderCreateEvent);
 
         return orderEntity;
     }

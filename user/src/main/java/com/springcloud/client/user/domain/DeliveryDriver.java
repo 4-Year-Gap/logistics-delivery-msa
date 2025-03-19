@@ -15,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Table(name = "p_delivery_driver")
-public class DeliveryDriver {
+public class DeliveryDriver extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

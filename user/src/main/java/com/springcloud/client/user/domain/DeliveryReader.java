@@ -1,6 +1,8 @@
 package com.springcloud.client.user.domain;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface DeliveryReader {
 
@@ -9,4 +11,6 @@ public interface DeliveryReader {
     List<DeliveryDriver> findAllByRoleOrderByDeliveryOrderNumberAsc(DeliveryDriverRole role);
 
     DeliveryAssignment findWithLock(int pk);
+
+    Optional<DeliveryDriver> findById(UUID userId);
 }

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -29,5 +31,10 @@ public class DeliveryReaderImpl implements DeliveryReader {
     @Override
     public DeliveryAssignment findWithLock(int pk) {
         return deliveryAssignmentRepository.findWithLock(pk);
+    }
+
+    @Override
+    public Optional<DeliveryDriver> findById(UUID userId) {
+        return deliveryRepository.findById(userId);
     }
 }

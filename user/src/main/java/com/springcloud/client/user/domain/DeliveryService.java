@@ -47,4 +47,12 @@ public class DeliveryService {
 
         return new DeliveryInfo(deliveryDriver);
     }
+
+    public void deleteHubDeliveryDriver(DeliveryCommand command) {
+        DeliveryDriver deliveryDriver = deliveryReader.findById(command.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        deliveryDriver.delete();
+        deliveryStore.save(deliveryDriver);
+    }
 }

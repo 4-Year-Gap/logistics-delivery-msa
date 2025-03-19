@@ -19,4 +19,8 @@ public class DeliveryFacade {
     public DeliveryInfo getHubDeliveryDriver() {
         return deliveryService.getHubDeliveryDriver();
     }
+
+    public void deleteHubDeliveryDriver(DeliveryCommand command) {
+        deliveryService.deleteHubDeliveryDriver(command);
+    }
 }

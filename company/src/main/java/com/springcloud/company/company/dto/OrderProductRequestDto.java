@@ -8,7 +8,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class OrderProductRequestDto {
-    private UUID recevingCompanyId;
+    private UUID receivingCompanyId;
     private UUID productId;
     private Integer quantity;
 }

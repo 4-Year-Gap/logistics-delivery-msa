@@ -1,16 +1,12 @@
-package com.spring_cloud.eureka.client.order.application.service;
+package com.spring_cloud.eureka.client.order.domain.order;
 
 
 
-import com.querydsl.core.types.Order;
-import com.spring_cloud.eureka.client.order.domain.order.OrderEntity;
-import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 
-import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +28,10 @@ public class OrderService {
     private final KafkaTemplate<String,String> kafkaTemplate;
 
     @Transactional
-    public OrderEntity createOrder(OrderCreateRequest orderCreateRequest, Integer userId) {
+    public OrderEntity createOrder(OrderCreateCommand command) {
 
 
-        ProductClientRequest productClientRequest = ProductClientRequest.create(orderCreateRequest);
+        ProductClientRequest productClientRequest = ProductClientRequest.create(command);
         ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
 
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
@@ -46,11 +42,11 @@ public class OrderService {
         userInfoClientResponse.setSlackId("test_user_slackId");
         userInfoClientResponse.setUserName("testUser");
 
-        OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,orderCreateRequest));
+        OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,command));
 
 
         assert productClientResponse != null;
-        OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,orderCreateRequest,productClientResponse);
+        OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,command,productClientResponse);
 
         kafkaTemplate.send("order_topic",orderCreateEvent.toJson());
 //        kafkaTemplate.send("product_decrease",orderCreateEvent.toJson());
@@ -58,34 +54,34 @@ public class OrderService {
         return orderEntity;
     }
 
-    private OrderCreateEvent createOrderEvent(OrderEntity orderEntity, OrderCreateRequest orderCreateRequest, ProductClientResponse productClientResponse) {
+    private OrderCreateEvent createOrderEvent(OrderEntity orderEntity, OrderCreateCommand command, ProductClientResponse productClientResponse) {
 
         return OrderCreateEvent.create(
                 orderEntity.getOrderId(),
                 productClientResponse.getStartHub(),
                 productClientResponse.getEndHub(),
                 productClientResponse.getProductId(),
-                orderCreateRequest.getProductQuantity()
+                command.getProductQuantity()
         );
     }
 
 
-    private OrderEntity orderCreate(UserInfoClientResponse userInfoClientResponse, OrderCreateRequest orderCreateRequest) {
+    private OrderEntity orderCreate(UserInfoClientResponse userInfoClientResponse, OrderCreateCommand command) {
         return OrderEntity.create(
                 userInfoClientResponse.getUserName(),
-                orderCreateRequest.getProductId(),
-                orderCreateRequest.getProductPrice(),
-                orderCreateRequest.getSupplierId(),
-                orderCreateRequest.getReceivingCompanyId(),
-                orderCreateRequest.getProductQuantity(),
-                orderCreateRequest.getRequestMessage()
+                command.getProductId(),
+                command.getProductPrice(),
+                command.getSupplierId(),
+                command.getReceivingCompanyId(),
+                command.getProductQuantity(),
+                command.getRequestMessage()
         );
     }
 
     @Transactional
-    public void updateOrder(UUID updateOrderId, OrderEntityStatus orderEntityStatus, Integer userId)  {
+    public OrderUpdateInfo updateOrder(OrderUpdateCommand command)  {
 
-        OrderEntity orderEntity = orderRepository.findById(updateOrderId)
+        OrderEntity orderEntity = orderRepository.findById(command.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
 
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
@@ -96,7 +92,8 @@ public class OrderService {
             throw new IllegalArgumentException("not own order");
         }
 
-        orderEntity.setStatus(orderEntityStatus);
+        orderEntity.setStatus(command.getOrderEntityStatus());
+        return new OrderUpdateInfo(orderEntity);
     }
 
     public OrderEntity getOneOrderInformationById(UUID orderId) {

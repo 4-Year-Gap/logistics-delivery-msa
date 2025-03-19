@@ -1,7 +1,7 @@
 package com.spring_cloud.eureka.client.order.infrastructure.client.dto;
 
 
-import com.spring_cloud.eureka.client.order.presentation.dto.request.OrderCreateRequest;
+import com.spring_cloud.eureka.client.order.domain.order.OrderCreateCommand;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,11 +17,11 @@ public class ProductClientRequest {
     private Integer quantity;// 주문한 제품의 수량
 
 
-    public static ProductClientRequest create(OrderCreateRequest orderCreateRequest){
+    public static ProductClientRequest create(OrderCreateCommand command){
         return ProductClientRequest.builder()
-                .receivingCompanyId(orderCreateRequest.getReceivingCompanyId())
-                .productId(orderCreateRequest.getProductId())
-                .quantity(orderCreateRequest.getProductQuantity())
+                .receivingCompanyId(command.getReceivingCompanyId())
+                .productId(command.getProductId())
+                .quantity(command.getProductQuantity())
                 .build();
     }
 }

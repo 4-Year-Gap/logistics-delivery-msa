@@ -3,8 +3,7 @@ package com.springcloud.client.delivery.presentation;
 
 import com.springcloud.client.delivery.application.service.DeliveryService;
 import com.springcloud.client.delivery.common.ApiResponse;
-import com.springcloud.client.delivery.domain.delivery.Delivery;
-import com.springcloud.client.delivery.infrastructure.client.HubClient;
+import com.springcloud.client.delivery.domain.delivery.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryController {
 
-    private final HubClient hubClient;
     private final DeliveryService deliveryService;
 
 
@@ -40,8 +38,18 @@ public class DeliveryController {
         return ApiResponse.ok(deliveryService.getDelivery(userId,role,deliveryId));
     }
 
-    @PatchMapping("/{deliveryId}")
-    public ApiResponse<?> updateDelivery(@PathVariable(name = "deliveryId") String deliveryId){
+    @PatchMapping()
+    public ApiResponse<?> updateDelivery(@RequestBody DeliveryUpdateRequest deliveryUpdateRequest){
+        DeliveryUpdateCommand command = deliveryUpdateRequest.toCommand();
+        deliveryService.updateDelivery(command);
+        return ApiResponse.ok("update complete");
+    }
 
+    @DeleteMapping()
+    public ApiResponse<?> deleteDelivery(@RequestBody DeliveryDeleteRequest deliveryDeleteRequest){
+
+        DeliveryDeleteCommand command = deliveryDeleteRequest.toCommand();
+        deliveryService.deleteDelivery(command);
+        return ApiResponse.ok("delete complete");
     }
 }

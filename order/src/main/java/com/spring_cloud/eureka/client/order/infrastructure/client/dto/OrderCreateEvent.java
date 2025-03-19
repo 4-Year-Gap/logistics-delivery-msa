@@ -17,27 +17,38 @@ import java.util.UUID;
 @Builder
 public class OrderCreateEvent implements Serializer {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     private UUID orderId;
     private UUID startHub;
     private UUID endHub;
     private UUID productId;
     private Integer productQuantity;
+    private String receiverSlackId;
+    private String address;
 
 
-    public static OrderCreateEvent create(UUID orderId, UUID startHub, UUID endHub, UUID productId, Integer productQuantity) {
+    public static OrderCreateEvent create(UUID orderId,
+                                          UUID startHub,
+                                          UUID endHub,
+                                          UUID productId,
+                                          Integer productQuantity,
+                                          String receiverSlackId,
+                                          String address) {
         return new OrderCreateEvent(
                 orderId,
                 startHub,
                 endHub,
                 productId,
-                productQuantity
+                productQuantity,
+                receiverSlackId,
+                address
         );
     }
 
     @Override
     public byte[] serialize(String s, Object data) {
+
         try {
             if (data == null) {
                 return null;
@@ -47,5 +58,4 @@ public class OrderCreateEvent implements Serializer {
             throw new RuntimeException("Error serializing OrderCreateEvent", e);
         }
     }
-
 }

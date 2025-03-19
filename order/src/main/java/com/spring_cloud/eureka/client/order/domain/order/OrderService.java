@@ -74,7 +74,9 @@ public class OrderService {
                 productClientResponse.getStartHub(),
                 productClientResponse.getEndHub(),
                 productClientResponse.getProductId(),
-                command.getProductQuantity()
+                command.getProductQuantity(),
+                command.getReceiverSlackId(),
+                command.getAddress()
         );
     }
 

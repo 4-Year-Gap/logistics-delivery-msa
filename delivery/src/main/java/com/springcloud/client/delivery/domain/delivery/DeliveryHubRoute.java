@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,14 +26,31 @@ public class DeliveryHubRoute {
     @JoinColumn(name = "order_id")
     private Delivery deliveryId;
 
-    private Integer deliverySequence; // 부산 대전 경기
+    private Integer deliverySequence;
     private UUID startHub;
     private UUID destinationHub;
-    private Integer shipperId;
-
-
+    private UUID shipperId;
     @Enumerated(EnumType.STRING)
     private DeliveryStatusEnum deliveryStatus;
 
 
+
+    public static DeliveryHubRoute to(HubRoute hubRoute){
+        return DeliveryHubRoute.builder()
+                .deliverySequence(hubRoute.getSequenceNumber())
+                .startHub(UUID.randomUUID())
+                .destinationHub(UUID.randomUUID())
+                .deliveryStatus(DeliveryStatusEnum.NOT_ACCEPTED)
+                .build();
+
+
+    }
+
+    public void setShipperId(UUID shipperId) {
+        this.shipperId = shipperId;
+    }
+
+    public void changeStatusToAccept() {
+        this.deliveryStatus = DeliveryStatusEnum.ACCEPTED;
+    }
 }

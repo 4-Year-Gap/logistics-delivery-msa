@@ -65,4 +65,12 @@ public class Company extends BaseEntity{
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 업체에 상품이 없습니다."));
     }
+
+    public Company updateCompany(String companyName, UUID hubId, String address) {
+        Company company = new Company();
+        company.companyName = companyName;
+        company.hubId = hubId;
+        company.address = address;
+        return company;
+    }
 }

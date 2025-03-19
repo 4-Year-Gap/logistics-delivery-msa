@@ -3,13 +3,15 @@ package com.springcloud.company.company.service;
 import com.springcloud.company.company.dto.CompanyRequestDto;
 import com.springcloud.company.company.dto.CompanyResponseDto;
 import com.springcloud.company.company.dto.OrderProductResponseDto;
+import com.springcloud.company.company.dto.UpdateCompanyRequestDto;
 import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +53,45 @@ public class CompanyService {
         return new OrderProductResponseDto(supplierCompany.getHubId(), product.getId(), receivingCompany.getHubId());
     }
 
+    @Transactional
+    // 업체 정보 수정
+    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId) {
+        Optional<Company> optionalCompany = companyRepository.findByUserId(userId);
+        Company company = optionalCompany.orElseThrow(() -> new NoSuchElementException("Product not found"));
+
+        //업체 엔티티 수정
+        company.updateCompany(requestDto.getCompanyName(),requestDto.getHubId(),requestDto.getAddress());
+
+        //업체 엔티티 DB 반영
+        companyRepository.save(company);
+
+        return new CompanyResponseDto(company);
+    }
+
+    // 업체 전체 조회
+    public List<CompanyResponseDto> getAllCompany() {
+        List<Company> companyList = companyRepository.findAll();
+        return companyList.stream()
+                .map(CompanyResponseDto::new)
+                .toList();
+    }
+
+    // 업체 삭제
+    @Transactional
+    public void deleteCompany(UUID companyId) {
+        Optional<Company> optionalCompany = companyRepository.findById(companyId);
+
+        Company company = optionalCompany.orElseThrow(() -> new NoSuchElementException("company not found"));
+
+        companyRepository.delete(company);
+
+    }
+
     //상품 ID로 업체 조회
     public Company getCompanyByProductId(UUID productId){
         return companyRepository.findByProducts_Id(productId).orElseThrow();
     }
+
+
+
 }

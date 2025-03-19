@@ -9,7 +9,6 @@ import java.util.UUID;
 @Builder
 @Getter
 public class DeliveryUpdateCommand {
-
     private UUID deliveryId;
     private DeliveryStatusEnum status;
     private UUID arrivedHub;

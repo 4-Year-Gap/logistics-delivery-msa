@@ -27,10 +27,13 @@ public class ProductController {
         //응답 보내기
         return productService.createProduct(requestDto,userId);
     }
-    @GetMapping("/stock")
-    @Description("상품 재고 차감")
-    public UpdateProductStockResponseDto updateProductStock(@RequestBody UpdateProductStockRequestDto RequestDto
+
+    @Description("주문 요청 후 재고 차감")
+    @PatchMapping("/deduck")
+    public UpdateProductStockResponseDto DeductProductStock(@RequestBody UpdateProductStockRequestDto RequestDto
     ){
         return productService.updateStock(RequestDto);
     }
+
+
 }

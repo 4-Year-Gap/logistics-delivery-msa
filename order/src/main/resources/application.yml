@@ -17,9 +17,7 @@ spring:
     bootstrap-servers: ${Kafka_host}:9092
     user-name: ${Kafka_name}
     password: ${Kafka_password}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 
 
 server:

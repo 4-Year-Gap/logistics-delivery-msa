@@ -25,14 +25,18 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
-    private final KafkaTemplate<String,String> kafkaTemplate;
+    private final KafkaTemplate<String,OrderCreateEvent> kafkaTemplate;
 
     @Transactional
     public OrderEntity createOrder(OrderCreateCommand command) {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
-        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
+//        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
+        ProductClientResponse productClientResponse  = new ProductClientResponse();
+        productClientResponse.setStartHub(UUID.randomUUID());
+        productClientResponse.setProductId(UUID.randomUUID());
+        productClientResponse.setEndHub(UUID.randomUUID());
 
 //        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
 
@@ -45,10 +49,11 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse,command));
 
 
-        assert productClientResponse != null;
         OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,command,productClientResponse);
 
-        kafkaTemplate.send("order_topic",orderCreateEvent.toJson());
+
+
+        kafkaTemplate.send("order_topic","asd",orderCreateEvent);
 //        kafkaTemplate.send("product_decrease",orderCreateEvent.toJson());
 
         return orderEntity;

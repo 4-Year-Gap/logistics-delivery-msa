@@ -14,19 +14,14 @@ public class ProductClientRequest {
 
     private UUID receivingCompanyId;// 제품 수요 업체 이걸 통해서 해당 업체가 소속되어 있는 허브를 찾을 수 있음
     private UUID productId; // 주문한 제품 이걸 통해서 수량 체크 및 시작 허브를 알 수 있음
+    private Integer quantity;// 주문한 제품의 수량
+
 
     public static ProductClientRequest create(OrderCreateRequest orderCreateRequest){
         return ProductClientRequest.builder()
                 .receivingCompanyId(orderCreateRequest.getReceivingCompanyId())
                 .productId(orderCreateRequest.getProductId())
+                .quantity(orderCreateRequest.getProductQuantity())
                 .build();
-    }
-
-    @Override
-    public String toString() {
-        return "ProductClientRequest{" +
-                "receivingCompanyId=" + receivingCompanyId +
-                ", productId=" + productId +
-                '}';
     }
 }

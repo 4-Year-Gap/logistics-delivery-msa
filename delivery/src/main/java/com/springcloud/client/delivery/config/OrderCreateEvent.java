@@ -12,9 +12,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderCreateEvent {
-    private String orderId;
+    private UUID orderId;
     private UUID startHub;
     private UUID endHub;
+    private UUID productId;
+    private Integer productQuantity;
 
     @Override
     public String toString() {

@@ -1,17 +1,15 @@
 package com.springcloud.client.delivery.infrastructure.client;
 
 
-import com.springcloud.client.delivery.common.ApiResponse;
 import com.springcloud.client.delivery.config.FeignConfig;
 import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
-import com.springcloud.client.delivery.infrastructure.dto.HubRouteRequest;
+import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -20,5 +18,6 @@ import java.util.UUID;
 public interface HubClient {
 
     @GetMapping("/api/hub/routes/shortest-path")
-    ApiResponse<HubClientResponse> getRoute(@RequestParam UUID startHudId,@RequestParam UUID goalHudId );
+    HubClientResponse<List<HubRoute>> getRoute(@RequestParam UUID startHudId, @RequestParam UUID goalHubId);
+
 }

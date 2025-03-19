@@ -37,13 +37,4 @@ public class DeliveryHubRoute {
     private DeliveryStatusEnum deliveryStatus;
 
 
-    public static DeliveryHubRoute create(HubRoute hubRoute){
-        return DeliveryHubRoute.builder()
-                .deliverySequence(hubRoute.getDeliverySequence())
-                .destinationHub(hubRoute.getDestinationHub())
-                .startHub(hubRoute.getStartHub())
-                .build();
-
-    }
-
 }

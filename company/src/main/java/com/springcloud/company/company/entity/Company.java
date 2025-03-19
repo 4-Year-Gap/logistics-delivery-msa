@@ -1,12 +1,17 @@
 package com.springcloud.company.company.entity;
 
 import com.springcloud.company.product.entity.BaseEntity;
+import com.springcloud.company.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,6 +46,9 @@ public class Company extends BaseEntity{
     @Comment("주소")
     private String address;
 
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products = new ArrayList<>();
+
     public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID userId) {
         Company company = new Company();
         company.companyName = companyName;
@@ -49,5 +57,12 @@ public class Company extends BaseEntity{
         company.companyType = companyType;
         company.address = address;
         return company;
+    }
+
+    public Product getProductById(UUID productId) {
+        return products.stream()
+                .filter(product -> product.getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 업체에 상품이 없습니다."));
     }
 }

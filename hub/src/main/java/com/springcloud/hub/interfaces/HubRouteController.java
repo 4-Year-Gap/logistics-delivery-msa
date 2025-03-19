@@ -1,10 +1,9 @@
 package com.springcloud.hub.interfaces;
 
-import com.springcloud.hub.application.HubDto;
-import com.springcloud.hub.application.HubRouteFacade;
-import com.springcloud.hub.application.HubRouteResultDto;
-import com.springcloud.hub.domain.entity.Hub;
-import com.springcloud.hub.domain.entity.HubRoute;
+import com.springcloud.hub.application.dto.FindHubRouteQuery;
+import com.springcloud.hub.application.dto.GetHubRouteQuery;
+import com.springcloud.hub.application.dto.HubRouteListCommand;
+import com.springcloud.hub.application.service.HubRouteFacade;
 import com.springcloud.hub.interfaces.exception.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,34 +21,42 @@ public class HubRouteController {
     private final HubRouteFacade hubRouteFacade;
 
     @GetMapping("/routes/naver")
-    public ResponseEntity<ResponseDto<HubRoute>> getOptimalRoute(
+    public ResponseEntity<ResponseDto<FindHubRouteQuery>> getOptimalRoute(
             @RequestParam UUID startHubId,
             @RequestParam UUID goalHubId) {
 
-        GetHubRouteRequestDto requestDto = new GetHubRouteRequestDto(startHubId, goalHubId);
+        FindHubRouteRequest requestDto = new FindHubRouteRequest(startHubId, goalHubId);
 
-        HubRoute routeInfo = hubRouteFacade.getOptimalRoute(requestDto);
+        FindHubRouteQuery routeInfo = hubRouteFacade.getOptimalRoute(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(routeInfo));
     }
 
-    @PostMapping("/routes/naver/")
-    public ResponseEntity<ResponseDto<List<HubRoute>>> createOptimalRoute(
-            @RequestBody CreateHubRouteRquestDto requestDto) {
+    @PostMapping("/routes/naver")
+    public ResponseEntity<ResponseDto<HubRouteListCommand>> createOptimalRoute(
+            @RequestBody CreateHubRouteRequest requestDto) {
 
-        List<HubRoute> routeList = hubRouteFacade.createBidirectionalRoutes(requestDto);
+        HubRouteListCommand routeList = hubRouteFacade.createBidirectionalRoutes(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(routeList));
     }
 
     @GetMapping("/routes/shortest-path")
-    public ResponseEntity<ResponseDto<List<HubRouteResultDto>>> findShortestPath(
+    public ResponseEntity<ResponseDto<List<GetHubRouteQuery>>> findShortestPath(
             @RequestParam UUID startHubId,
             @RequestParam UUID goalHubId) {
 
-        GetHubRouteRequestDto requestDto = new GetHubRouteRequestDto(startHubId, goalHubId);
+        FindHubRouteRequest requestDto = new FindHubRouteRequest(startHubId, goalHubId);
 
-        List<HubRouteResultDto> shortestPath = hubRouteFacade.findShortestPath(requestDto);
+        List<GetHubRouteQuery> shortestPath = hubRouteFacade.findShortestPath(requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(shortestPath));
+    }
+
+    @GetMapping("/routes/cache/warmup")
+    public ResponseEntity<ResponseDto<List<GetHubRouteQuery>>> cacheWarmUp() {
+
+        List<GetHubRouteQuery> shortestPath = hubRouteFacade.cacheWarmUp();
 
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(shortestPath));
     }

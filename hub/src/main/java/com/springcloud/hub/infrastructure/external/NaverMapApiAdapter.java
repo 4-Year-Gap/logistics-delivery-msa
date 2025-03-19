@@ -2,7 +2,7 @@ package com.springcloud.hub.infrastructure.external;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springcloud.hub.application.RouteInfo;
+import com.springcloud.hub.application.dto.FindNaverRouteQuery;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.interfaces.exception.ExternalApiException;
 import com.springcloud.hub.interfaces.exception.RouteNotFoundException;
@@ -20,7 +20,7 @@ public class NaverMapApiAdapter {
     /**
      * 두 허브 사이의 최적 경로 정보를 네이버 맵 API로부터 조회
      */
-    public RouteInfo getOptimalRouteInfo(Hub startHub, Hub goalHub) {
+    public FindNaverRouteQuery getOptimalRouteInfo(Hub startHub, Hub goalHub) {
         try {
             String jsonResponse = naverMapClient.requestOptimalRoute(
                     startHub.getLatitude(), startHub.getLongitude(),
@@ -33,7 +33,7 @@ public class NaverMapApiAdapter {
             }
 
             NaverMapApiResponse.Summary summary = response.route().traoptimal().get(0).summary();
-            return new RouteInfo(
+            return new FindNaverRouteQuery(
                     LocalTime.ofSecondOfDay(summary.duration() / 1000),
                     summary.distance()
             );

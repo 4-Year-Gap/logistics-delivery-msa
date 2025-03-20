@@ -3,17 +3,20 @@ package com.springcloud.client.delivery.presentation;
 
 import com.springcloud.client.delivery.application.service.DeliveryService;
 import com.springcloud.client.delivery.common.ApiResponse;
-import com.springcloud.client.delivery.domain.delivery.Delivery;
+import com.springcloud.client.delivery.domain.delivery.*;
 import com.springcloud.client.delivery.infrastructure.client.HubClient;
+import com.springcloud.client.delivery.infrastructure.client.UserClient;
+import com.springcloud.client.delivery.infrastructure.dto.DeliveryDriverClientResponse;
+import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
+import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
+import com.springcloud.client.delivery.infrastructure.dto.UserInfoClientResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,8 +24,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryController {
 
-    private final HubClient hubClient;
     private final DeliveryService deliveryService;
+    private final HubClient hubClient;
+    private final UserClient userClient;
 
 
     @GetMapping("/search")
@@ -41,5 +45,28 @@ public class DeliveryController {
             @PathVariable(name = "deliveryId") UUID deliveryId
     ){
         return ApiResponse.ok(deliveryService.getDelivery(userId,role,deliveryId));
+    }
+
+    @PatchMapping()
+    public ApiResponse<?> updateDelivery(@RequestBody DeliveryUpdateRequest deliveryUpdateRequest){
+        DeliveryUpdateCommand command = deliveryUpdateRequest.toCommand();
+        deliveryService.updateDelivery(command);
+        return ApiResponse.ok("update complete");
+    }
+
+    @DeleteMapping()
+    public ApiResponse<?> deleteDelivery(@RequestBody DeliveryDeleteRequest deliveryDeleteRequest){
+
+        DeliveryDeleteCommand command = deliveryDeleteRequest.toCommand();
+        deliveryService.deleteDelivery(command);
+        return ApiResponse.ok("delete complete");
+    }
+
+    @GetMapping("/test")
+    public ApiResponse<?> deleteDelivery(){
+
+        HubClientResponse<List<HubRoute>> list = hubClient.getRoute(UUID.fromString("86d7b72b-0270-11f0-87a5-0242ac130003"),UUID.fromString("86d6204c-0270-11f0-87a5-0242ac130003"));
+
+        return ApiResponse.ok(list.getData());
     }
 }

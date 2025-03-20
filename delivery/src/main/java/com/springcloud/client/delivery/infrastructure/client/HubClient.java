@@ -18,6 +18,6 @@ import java.util.UUID;
 public interface HubClient {
 
     @GetMapping("/api/hub/routes/shortest-path")
-    HubClientResponse<List<HubRoute>> getRoute(@RequestParam UUID startHudId, @RequestParam UUID goalHubId);
+    HubClientResponse<List<HubRoute>> getRoute(@RequestParam UUID startHubId, @RequestParam UUID goalHubId);
 
 }

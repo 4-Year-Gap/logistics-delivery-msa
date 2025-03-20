@@ -34,9 +34,4 @@ public class Hub extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 7)
     @Comment("경도")
     private BigDecimal longitude;
-
-    @Column(nullable = false)
-    @Builder.Default
-    @Comment("삭제여부")
-    private boolean isDeleted = false;
 }

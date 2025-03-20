@@ -3,7 +3,7 @@ package com.springcloud.hub.infrastructure.repository;
 import com.springcloud.hub.application.dto.FindHubQuery;
 import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import com.springcloud.hub.domain.repository.HubRouteCacheStore;
-import com.springcloud.hub.interfaces.FindHubRouteRequest;
+import com.springcloud.hub.interfaces.dto.GetHubRouteRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +27,7 @@ public class HubRouteCacheStoreImpl implements HubRouteCacheStore {
     }
 
     @Override
-    public List<GetHubRouteQuery> getShortestPath(FindHubRouteRequest fromHub, FindHubRouteRequest toHub) {
+    public List<GetHubRouteQuery> getShortestPath(GetHubRouteRequest fromHub, GetHubRouteRequest toHub) {
         String cacheKey = CACHE_PREFIX + fromHub.startHubId() + ":" + toHub.goalHubId();
         return hubRouteTemplate.opsForValue().get(cacheKey);
     }

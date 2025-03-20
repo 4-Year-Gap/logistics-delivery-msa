@@ -1,6 +1,5 @@
 package com.springcloud.hub.domain.repository;
 
-import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import com.springcloud.hub.application.dto.HubRouteListCommand;
 import com.springcloud.hub.domain.entity.HubRoute;
 

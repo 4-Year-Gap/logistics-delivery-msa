@@ -1,4 +1,4 @@
-package com.springcloud.hub.infrastructure.external;
+package com.springcloud.hub.infrastructure.dto;
 
 import java.math.BigDecimal;
 import java.util.List;

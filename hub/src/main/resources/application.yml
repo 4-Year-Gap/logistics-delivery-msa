@@ -37,11 +37,19 @@ server:
   port: 19091
 
 naver:
-  api:
-    url: ${Naver_map_api_url}
-    key:
-      id: ${Naver_map_api_key_id}
-      value: ${Naver_map_api_key_value}
+  maps:
+    api:
+      directions5:
+        url: ${Naver_maps_directions5_api_url}
+      key:
+        id: ${Naver_maps_api_key_id}
+        value: ${Naver_maps_api_key_value}
+
+kakao:
+  maps:
+    api:
+      url: ${Kakao_maps_api_url}
+      key: ${Kakao_maps_api_key}
 
 eureka:
   client:

@@ -25,6 +25,8 @@ public class OrderCreateEvent implements Deserializer<OrderCreateEvent> {
     private Integer productQuantity;
     private String receiverSlackId;
     private String address;
+    private Integer receiverId;
+    private Integer userId;
     @Override
     public OrderCreateEvent deserialize(String topic, byte[] data) {
         try {

@@ -32,7 +32,7 @@ public class OrderService {
     private String ORDER_CREATE_TOPIC;
 
     @Value("${kafka.event.name.product_decrease}")
-    private String PRODUCT_DECREASE_QUEUE;
+    private String PRODUCT_DECREASE_TOPIC;
 
     private String KEY_PREFIX = "ORDER_ID : ";
 
@@ -41,13 +41,10 @@ public class OrderService {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
-//        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
-        ProductClientResponse productClientResponse  = new ProductClientResponse();
-        productClientResponse.setStartHub(UUID.randomUUID());
-        productClientResponse.setProductId(UUID.randomUUID());
-        productClientResponse.setEndHub(UUID.randomUUID());
+        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
 
-//        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
+        System.out.println("@@@@@@"+productClientResponse.getEndHub());
+        System.out.println("@@@@@@@@@"+productClientResponse.getStartHub());
 
         //나중에 삭제
         UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
@@ -62,7 +59,7 @@ public class OrderService {
 
 
         kafkaTemplate.send(ORDER_CREATE_TOPIC,KEY_PREFIX + orderCreateEvent.getOrderId(),orderCreateEvent);
-//        kafkaTemplate.send("product_decrease",orderCreateEvent);
+//        kafkaTemplate.send(PRODUCT_DECREASE_TOPIC,orderCreateEvent);
 
         return orderEntity;
     }
@@ -76,7 +73,8 @@ public class OrderService {
                 productClientResponse.getProductId(),
                 command.getProductQuantity(),
                 command.getReceiverSlackId(),
-                command.getAddress()
+                command.getAddress(),
+                command.getUserId()
         );
     }
 

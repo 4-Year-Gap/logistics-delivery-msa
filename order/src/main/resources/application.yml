@@ -28,6 +28,16 @@ eureka:
   client:
     service-url:
       defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/
+  instance:
+    hostname: ${My_host}
+    securePortEnabled: true
+    nonSecurePortEnabled: false
+    securePort: 443
+    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
+    homePageUrl: https://${eureka.instance.hostname}/
+    preferIpAddress: false
+    secureVirtualHostName: ${spring.application.name}
 
 kafka:
   event:

@@ -7,13 +7,14 @@ import com.spring_cloud.eureka.client.order.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Component
 @FeignClient(name = "company-service",configuration = FeignConfig.class)
 public interface ProductClient {
 
-    @GetMapping("/api/companies")
+    @PostMapping("/api/companies/check")
     ProductClientResponse getProduct(@RequestBody ProductClientRequest request);
 
 }

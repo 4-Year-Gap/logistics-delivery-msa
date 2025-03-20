@@ -26,6 +26,7 @@ public class OrderCreateEvent implements Serializer {
     private Integer productQuantity;
     private String receiverSlackId;
     private String address;
+    private Integer userId;
 
 
     public static OrderCreateEvent create(UUID orderId,
@@ -34,7 +35,9 @@ public class OrderCreateEvent implements Serializer {
                                           UUID productId,
                                           Integer productQuantity,
                                           String receiverSlackId,
-                                          String address) {
+                                          String address,
+                                          Integer userId
+                                          ) {
         return new OrderCreateEvent(
                 orderId,
                 startHub,
@@ -42,7 +45,8 @@ public class OrderCreateEvent implements Serializer {
                 productId,
                 productQuantity,
                 receiverSlackId,
-                address
+                address,
+                userId
         );
     }
 

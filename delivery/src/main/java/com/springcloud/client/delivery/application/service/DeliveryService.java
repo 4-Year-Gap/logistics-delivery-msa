@@ -11,6 +11,7 @@ import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
 import com.springcloud.client.delivery.infrastructure.repository.DeliveryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
@@ -53,13 +55,9 @@ public class DeliveryService {
     @Transactional
     public void confirmDelivery(OrderCreateEvent orderCreateEvent) {
 
+
         HubClientResponse<List<HubRoute>> hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub());
-        DeliveryDriverClientResponse deliveryDriverClientResponse =  userInfoClient.getRoute();
-        /*
-         * HubClientResponse 를 통해 최단 경로 허브 루트를 알아오기
-         * DeliveryDriverClientResponse 를 통해 현재 배송이 가능한 허브 배송 담당자 정보 가지고 오기
-         * Delivery 생성 및 저장
-         */
+        DeliveryDriverClientResponse deliveryDriverClientResponse = userInfoClient.getRoute();
 
         // 배송 담당자 배정
         Delivery delivery = createDelivery(orderCreateEvent,hubClientResponse,deliveryDriverClientResponse);
@@ -69,21 +67,20 @@ public class DeliveryService {
 
     private Delivery createDelivery(OrderCreateEvent orderCreateEvent, HubClientResponse<List<HubRoute>> hubClientResponse, DeliveryDriverClientResponse deliveryDriverClientResponse) {
 
-        /*
-         * 배송을 생성 처음 상태는 대기중
-         */
+
         return Delivery.create(
                 orderCreateEvent.getAddress(),
                 DeliveryStatusEnum.WAITING,
                 orderCreateEvent.getStartHub(),
                 orderCreateEvent.getEndHub(),
                 orderCreateEvent.getReceiverSlackId(),
-                createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse)
+                createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse),
+                orderCreateEvent.getUserId()
         );
     }
 
     private List<DeliveryHubRoute> createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse) {
-        // 리스트 순서대로 정렬
+
         List<HubRoute> sortedRoutes = routeList.stream()
                 .sorted(Comparator.comparingInt(HubRoute::getSequenceNumber))
                 .toList();
@@ -110,9 +107,9 @@ public class DeliveryService {
 
         delivery.setStatus(command.getStatus());
 
-        //만약 마지막 허브에 도착을 한다면
+
         if(command.getArrivedHub().equals(delivery.getEndHubId()) && command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
-            // 업체 배송 담당자 지정
+
             delivery.setStatus(DeliveryStatusEnum.IN_DELIVER);
 
             designationCompanyDeliver(delivery);

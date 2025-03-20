@@ -66,7 +66,7 @@ public class OrderEntity extends BaseEntity {
                 .quantity(productQuantity)
                 .totalPrice(productPrice)
                 .requestMessage(requestMessage)
-                .status(OrderEntityStatus.ACCEPTED)
+                .status(OrderEntityStatus.IN_DELIVER)
                 .build();
     }
 }

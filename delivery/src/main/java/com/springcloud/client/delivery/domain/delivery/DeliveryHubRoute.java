@@ -39,15 +39,16 @@ public class DeliveryHubRoute {
     private UUID shipperId;
     @Comment("예상 시간")
     private LocalTime timeRequired;
-    @Enumerated(EnumType.STRING)
+
     @Comment("예상 거리")
     private BigDecimal totalDistance;
     @Comment("실제 시간")
     private LocalTime durationTime;
-    @Enumerated(EnumType.STRING)
+
     @Comment("실제 거리")
     private BigDecimal realDistance;
 
+    @Enumerated(EnumType.STRING)
     @Comment("배송 상태")
     private DeliveryStatusEnum deliveryStatus;
 

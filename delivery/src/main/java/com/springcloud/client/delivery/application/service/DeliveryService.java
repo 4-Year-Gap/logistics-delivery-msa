@@ -2,8 +2,9 @@ package com.springcloud.client.delivery.application.service;
 
 
 import com.springcloud.client.delivery.domain.delivery.*;
-import com.springcloud.client.delivery.infrastructure.client.DeliveryDriverClient;
+//import com.springcloud.client.delivery.infrastructure.client.DeliveryDriverClient;
 import com.springcloud.client.delivery.infrastructure.client.HubClient;
+import com.springcloud.client.delivery.infrastructure.client.UserClient;
 import com.springcloud.client.delivery.infrastructure.dto.DeliveryDriverClientResponse;
 import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
 import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +27,8 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final HubClient hubClient;
-    private final DeliveryDriverClient deliveryDriverClient;
+//    private final DeliveryDriverClient deliveryDriverClient;
+    private final UserClient userInfoClient;
 
 
     public Page<Delivery> getDeliveries(Integer userId, String role, Pageable pageable) {
@@ -53,7 +54,7 @@ public class DeliveryService {
     public void confirmDelivery(OrderCreateEvent orderCreateEvent) {
 
         HubClientResponse<List<HubRoute>> hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub());
-        DeliveryDriverClientResponse deliveryDriverClientResponse =  deliveryDriverClient.getRoute();
+        DeliveryDriverClientResponse deliveryDriverClientResponse =  userInfoClient.getRoute();
         /*
          * HubClientResponse 를 통해 최단 경로 허브 루트를 알아오기
          * DeliveryDriverClientResponse 를 통해 현재 배송이 가능한 허브 배송 담당자 정보 가지고 오기

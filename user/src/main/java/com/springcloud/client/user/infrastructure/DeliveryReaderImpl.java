@@ -17,6 +17,11 @@ public class DeliveryReaderImpl implements DeliveryReader {
     private final DeliveryAssignmentRepository deliveryAssignmentRepository;
 
     @Override
+    public Integer findMaxDeliveryOrderNumberByRole(DeliveryDriverRole role) {
+        return deliveryRepository.findMaxDeliveryOrderNumberByRole(role);
+    }
+
+    @Override
     public List<DeliveryDriver> findAllByRoleOrderByDeliveryOrderNumberAsc(DeliveryDriverRole role) {
         return deliveryRepository.findAllByRoleOrderByDeliveryOrderNumberAsc(role);
     }

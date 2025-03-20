@@ -1,5 +1,6 @@
 package com.springcloud.client.user.interfaces;
 
+import com.springcloud.client.user.domain.DeliveryCommand;
 import com.springcloud.client.user.domain.DeliveryDriverRole;
 import com.springcloud.client.user.domain.DeliveryInfo;
 import lombok.Getter;
@@ -7,6 +8,17 @@ import lombok.Getter;
 import java.util.UUID;
 
 public class DeliveryDriverDto {
+
+    @Getter
+    public static class DeliveryDriverRequest {
+        private UUID userId;
+
+        public DeliveryCommand toCommand() {
+            return DeliveryCommand.builder()
+                    .userId(this.userId)
+                    .build();
+        }
+    }
 
     @Getter
     public static class DeliveryDriverResponse {

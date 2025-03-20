@@ -1,13 +1,10 @@
 package com.springcloud.hub.interfaces;
 
-import com.springcloud.hub.application.dto.FindAddressQuery;
 import com.springcloud.hub.application.dto.FindHubQuery;
 import com.springcloud.hub.application.dto.ListHubQuery;
 import com.springcloud.hub.application.service.HubFacade;
-import com.springcloud.hub.interfaces.dto.CreateHubRequest;
-import com.springcloud.hub.interfaces.dto.DeleteHubRequest;
-import com.springcloud.hub.interfaces.dto.FindHubRequest;
-import com.springcloud.hub.interfaces.dto.UpdateHubRequest;
+import com.springcloud.hub.infrastructure.dto.KakaoMapApiResponse;
+import com.springcloud.hub.interfaces.dto.*;
 import com.springcloud.hub.interfaces.exception.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +29,7 @@ public class HubController {
 
     @GetMapping
     public ResponseEntity<ResponseDto<ListHubQuery>> findHubs(
-            @ModelAttribute FindHubRequest requestDto, Pageable pageable) {
+            @ModelAttribute SearchHubRequest requestDto, Pageable pageable) {
 
         ListHubQuery hubs = hubFacade.findHubs(requestDto, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(hubs));
@@ -47,10 +44,19 @@ public class HubController {
     }
 
     @DeleteMapping
-    public ResponseEntity<ResponseDto<String>> deleteHub(
+    public ResponseEntity<ResponseDto<FindHubQuery>> deleteHub(
             @RequestBody DeleteHubRequest requestDto) {
 
-        hubFacade.deleteHub(requestDto);
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success());
+        FindHubQuery findHubQuery = hubFacade.deleteHub(requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(findHubQuery));
+    }
+
+    @GetMapping("/address/kakao")
+    public ResponseEntity<ResponseDto<KakaoMapApiResponse>> getAddressLatitudeAndLongitude(
+            @ModelAttribute FindAddressRequest requestDto, Pageable pageable) {
+
+        KakaoMapApiResponse addressLatitudeAndLongitude = hubFacade.getAddressLatitudeAndLongitude(requestDto, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(addressLatitudeAndLongitude));
     }
 }

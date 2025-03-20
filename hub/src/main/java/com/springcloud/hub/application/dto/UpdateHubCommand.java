@@ -21,9 +21,9 @@ public record UpdateHubCommand(UUID id,
         );
     }
 
-    public Hub toEntity() {
+    public Hub toEntity(Hub hub) {
         return Hub.builder()
-                .Id(id)
+                .Id(hub.getId())
                 .name(name)
                 .address(address)
                 .latitude(latitude)

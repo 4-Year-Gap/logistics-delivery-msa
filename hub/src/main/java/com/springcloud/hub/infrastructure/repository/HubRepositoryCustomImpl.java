@@ -3,6 +3,7 @@ package com.springcloud.hub.infrastructure.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.springcloud.hub.application.dto.FindHubQuery;
+import com.springcloud.hub.application.dto.SearchHubQuery;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.entity.QHub;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +23,12 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<Hub> findHubById(UUID hubId) {
+    public Optional<Hub> findById(UUID hubId) {
         QHub hub = QHub.hub;
 
         return Optional.ofNullable(
                 queryFactory.selectFrom(hub)
-                        .where(hub.Id.eq(hubId).and(hub.isDeleted.eq(false)))
+                        .where(hub.Id.eq(hubId).and(hub.deletedAt.isNull()))
                         .fetchOne()
         );
     }
@@ -36,19 +37,19 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
     public List<Hub> findAllHubs() {
         QHub hub = QHub.hub;
         return queryFactory.selectFrom(hub)
-                .where(hub.isDeleted.eq(false))
+                .where(hub.deletedAt.isNull())
                 .fetch();
     }
 
     @Override
-    public Page<Hub> findAllHubs(FindHubQuery findHubQuery, Pageable pageable) {
+    public Page<Hub> findAllHubs(SearchHubQuery searchHubQuery, Pageable pageable) {
         QHub hub = QHub.hub;
 
         List<Hub> content = queryFactory
                 .selectFrom(hub)
                 .where(
-                        hub.isDeleted.eq(false),
-                        nameContains(findHubQuery.name())
+                        hub.deletedAt.isNull(),
+                        nameContains(searchHubQuery.name())
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -58,8 +59,8 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                 .select(hub.count())
                 .from(hub)
                 .where(
-                        hub.isDeleted.eq(false),
-                        nameContains(findHubQuery.name())
+                        hub.deletedAt.isNull(),
+                        nameContains(searchHubQuery.name())
                 )
                 .fetchOne();
 

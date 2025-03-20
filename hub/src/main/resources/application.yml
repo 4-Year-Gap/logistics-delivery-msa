@@ -51,7 +51,6 @@ kakao:
       url: ${Kakao_maps_api_url}
       key: ${Kakao_maps_api_key}
 
-
 eureka:
   client:
     service-url:

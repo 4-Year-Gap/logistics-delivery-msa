@@ -1,7 +1,6 @@
 -- auto-generated definition
 create table p_hubs
 (
-    is_deleted bit            not null comment '삭제여부',
     latitude   decimal(10, 7) not null comment '위도',
     longitude  decimal(10, 7) not null comment '경도',
     created_at datetime(6)    null comment '레코드 생성 일시',
@@ -27,7 +26,6 @@ create table p_hub_routes
     deleted_by    varchar(50)    null comment '레코드 삭제자',
     updated_at    datetime(6)    null comment '레코드 수정 일시',
     updated_by    varchar(50)    null comment '레코드 수정자',
-    is_deleted    bit            not null comment '삭제여부',
     move_distance decimal(10, 3) not null comment '이동거리',
     time_required time(6)        not null comment '소요시간',
     from_hub_id   binary(16)     not null comment '도착지 허브 ID',

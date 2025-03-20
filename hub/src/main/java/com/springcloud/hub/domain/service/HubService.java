@@ -17,8 +17,8 @@ public class HubService {
     /**
      * 주어진 허브 ID를 기반으로 허브를 조회하고, 존재하지 않으면 예외를 던짐
      */
-    public Hub findHubById(UUID hubId) {
-        return hubReader.findHubById(hubId)
+    public Hub findById(UUID hubId) {
+        return hubReader.findById(hubId)
                 .orElseThrow(() -> new CustomNotFoundException("허브 정보를 찾을 수 없습니다."));
     }
 }

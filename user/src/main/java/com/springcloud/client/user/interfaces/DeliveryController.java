@@ -28,4 +28,11 @@ public class DeliveryController {
         DeliveryDriverDto.DeliveryDriverResponse response = new DeliveryDriverDto.DeliveryDriverResponse(info);
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/hub-delivery-driver")
+    public ResponseEntity<Void> deleteHubDeliveryDriver(@RequestBody DeliveryDriverDto.DeliveryDriverRequest request) {
+        DeliveryCommand command = request.toCommand();
+        deliveryFacade.deleteHubDeliveryDriver(command);
+        return ResponseEntity.noContent().build();
+    }
 }

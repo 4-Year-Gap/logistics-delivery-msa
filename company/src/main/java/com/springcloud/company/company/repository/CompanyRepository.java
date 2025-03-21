@@ -14,5 +14,4 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
     @EntityGraph(attributePaths = {"products"})
     Optional<Company> findByProducts_Id(UUID productId);
-
 }

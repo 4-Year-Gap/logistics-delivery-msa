@@ -38,4 +38,7 @@ public class User extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     @Comment("사용자 권한")
     private UserRole role;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
+    private DeliveryDriver deliveryDriver;
 }

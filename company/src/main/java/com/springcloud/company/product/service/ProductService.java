@@ -49,8 +49,8 @@ public class ProductService {
     public UpdateProductStockResponseDto deduckStock(UpdateProductStockRequestDto requestDto) {
         //상품의 ID로 Company불러옴
         Company company = companyService.getCompanyByProductId(requestDto.getProductId());
-
-//        // 업체 1: 상품 N 이라서 productId에 맞는 상품을 불러옴
+//
+////        // 업체 1: 상품 N 이라서 productId에 맞는 상품을 불러옴
 //        Product product = company.getProducts().stream()
 //                .filter( p -> p.getId().equals(productId))
 //                .findAny()

@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,7 +27,7 @@ public abstract class BaseEntity {
     @CreatedBy
     @Column(name = "created_by", length = 50, updatable = false)
     @Comment("레코드 생성자")
-    private String createdBy;
+    protected String createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")
@@ -37,18 +38,18 @@ public abstract class BaseEntity {
     @LastModifiedBy
     @Column(name = "updated_by", length = 50)
     @Comment("레코드 수정자")
-    private String updatedBy;
+    protected String updatedBy;
 
     @Column(name = "deleted_at")
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("레코드 삭제 일시")
-    private LocalDateTime deletedAt;
+    protected LocalDateTime deletedAt;
 
     @Column(name = "deleted_by", length = 50)
     @Comment("레코드 삭제자")
-    private String deletedBy;
+    protected UUID deletedBy;
 
-    public void delete(String deletedBy) {
+    public void delete(UUID deletedBy) {
         this.deletedBy = deletedBy;
         this.deletedAt = LocalDateTime.now();
     }

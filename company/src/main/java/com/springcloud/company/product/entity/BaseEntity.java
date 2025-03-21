@@ -42,11 +42,11 @@ public abstract class BaseEntity {
     @Column(name = "deleted_at")
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("레코드 삭제 일시")
-    private LocalDateTime deletedAt;
+    protected LocalDateTime deletedAt;
 
     @Column(name = "deleted_by", length = 50)
     @Comment("레코드 삭제자")
-    private String deletedBy;
+    protected String deletedBy;
 
     public void delete(String deletedBy) {
         this.deletedBy = deletedBy;

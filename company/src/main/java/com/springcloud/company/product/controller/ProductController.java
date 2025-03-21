@@ -1,9 +1,6 @@
 package com.springcloud.company.product.controller;
 
-import com.springcloud.company.product.dto.ProductRequestDto;
-import com.springcloud.company.product.dto.ProductResponseDto;
-import com.springcloud.company.product.dto.UpdateProductStockRequestDto;
-import com.springcloud.company.product.dto.UpdateProductStockResponseDto;
+import com.springcloud.company.product.dto.*;
 import com.springcloud.company.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -29,11 +26,11 @@ public class ProductController {
         return productService.createProduct(requestDto,userId);
     }
 
-    @Description("주문 요청 후 재고 차감")
-    @PatchMapping("/deduck")
-    public UpdateProductStockResponseDto DeductProductStock(@RequestBody UpdateProductStockRequestDto RequestDto
+    @Description("상품 수정(재고 포함)")
+    @PatchMapping("/{productId}")
+    public ProductResponseDto updateProductStock(@PathVariable UUID productId, @RequestBody UpdateProductRequestDto RequestDto
     ){
-        return productService.deduckStock(RequestDto);
+        return productService.updateProduct(productId,RequestDto);
     }
 
     @Description("상품 전체 조회")
@@ -59,8 +56,11 @@ public class ProductController {
 
     @Description("등록 상품 삭제")
     @DeleteMapping("/{productId}")
-    public void deleteProduct(@PathVariable UUID productId) {
-        productService.deleteProduct(productId);
+    public void deleteProduct(@PathVariable UUID productId
+            //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
+    ) {
+        UUID userId = UUID.fromString("e7fb3090-17e9-4c26-8914-f224a2fc2074");
+        productService.deleteProduct(productId,userId);
     }
 
 

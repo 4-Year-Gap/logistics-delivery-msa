@@ -5,10 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.Where;
 
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Where(clause = "deleted_at IS NULL")
 @Getter
 @Entity
 @Table(name= "product") //매핑할 테이블명
@@ -64,10 +67,39 @@ public class Product extends BaseEntity{
         return product;
     }
 
-    public void deduct(int quantity) {
-        if (this.stock < quantity) {
-            throw new IllegalArgumentException("재고 부족");
+
+    public void deleteProduct(UUID userId) {
+        delete(String.valueOf(userId));
+    }
+
+    public void updateQuantity(int quantity) {
+        if (quantity > 0) {
+            // 양수일 경우: 재고 추가
+            this.stock += quantity;
+        } else {
+            // 음수일 경우: 재고 차감 로직
+            int absQuantity = Math.abs(quantity); // 절대값 변환
+            if (this.stock < absQuantity) {
+                throw new IllegalArgumentException("재고 부족");
+            }
+            this.stock -= absQuantity; // 재고 차감
         }
-        this.stock -= quantity; // 재고 차감
+    }
+
+    public void updateProduct(String productName, int productPrice, int quantity) {
+        this.productName = productName;
+        this.price = productPrice;
+        // 재고 추가 (quantity > 0)
+        if (quantity > 0) {
+            this.stock += quantity;  // 양수일 경우: 재고 추가
+        }
+        // 재고 차감 (quantity < 0)
+        else if (quantity < 0) {
+            int quantityToDeduct = -quantity;  // 음수에서 양수로 변환하여 차감
+            if (this.stock < quantityToDeduct) {
+                throw new IllegalArgumentException("재고 부족: 요청한 차감량이 재고보다 많습니다.");
+            }
+            this.stock -= quantityToDeduct;  // 재고 차감
+        }
     }
 }

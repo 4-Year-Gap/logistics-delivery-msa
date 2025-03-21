@@ -37,9 +37,4 @@ public class HubRoute extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 3)
     @Comment("이동거리")
     private BigDecimal moveDistance;
-
-    @Column(nullable = false)
-    @Builder.Default
-    @Comment("삭제여부")
-    private boolean isDeleted = false;
 }

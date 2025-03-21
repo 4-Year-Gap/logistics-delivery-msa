@@ -17,9 +17,7 @@ spring:
     bootstrap-servers: ${Kafka_host}:9092
     user-name: ${Kafka_name}
     password: ${Kafka_password}
-    consumer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 
 server:
   port: 19097
@@ -40,4 +38,10 @@ eureka:
     preferIpAddress: false
     secureVirtualHostName: ${spring.application.name}
 
+kafka:
+  event:
+    group: order_group
+    name:
+      order-create: order-topic
+      product_decrease: product_decrease
 

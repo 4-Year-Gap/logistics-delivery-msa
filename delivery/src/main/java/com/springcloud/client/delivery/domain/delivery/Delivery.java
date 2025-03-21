@@ -20,20 +20,6 @@ import java.util.UUID;
 @Table(name = "p_ deliveries")
 public class Delivery extends BaseEntity {
 
-    @Override
-    public String toString() {
-        return "Delivery{" +
-                "deliveryId=" + deliveryId +
-                ", status=" + status +
-                ", startHubId=" + startHubId +
-                ", endHubId=" + endHubId +
-                ", address='" + address + '\'' +
-                ", receiverSlackId='" + receiverSlackId + '\'' +
-                ", receiverId=" + receiverId +
-                ", deliveryHubRouteList=" + deliveryHubRouteList +
-                '}';
-    }
-
     @Id
     @UuidGenerator
     @Column(nullable = false, name = "delivery_Id")
@@ -63,7 +49,7 @@ public class Delivery extends BaseEntity {
 
     @Column(nullable = false)
     @Comment("배송 받는 사람 ID")
-    private UUID receiverId;
+    private Integer receiverId;
 
     @OneToMany(mappedBy = "deliveryId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryHubRoute> deliveryHubRouteList;
@@ -72,7 +58,9 @@ public class Delivery extends BaseEntity {
                                   DeliveryStatusEnum deliveryStatusEnum,
                                   UUID startHub, UUID endHub,
                                   String slackId,
-                                  List<DeliveryHubRoute> deliveryHubRouteList)
+                                  List<DeliveryHubRoute> deliveryHubRouteList,
+                                  Integer receiverId
+    )
     {
         return Delivery.builder()
                 .address(address)
@@ -81,7 +69,11 @@ public class Delivery extends BaseEntity {
                 .endHubId(endHub)
                 .receiverSlackId(slackId)
                 .deliveryHubRouteList(deliveryHubRouteList)
+                .receiverId(receiverId)
                 .build();
 
+    }
+    public void updateStatus(DeliveryStatusEnum status){
+        this.status = status;
     }
 }

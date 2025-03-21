@@ -7,18 +7,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.Where;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 @Getter
 @Entity
 @Table(name = "company")
+@Where(clause = "deleted_at IS NULL")
 @NoArgsConstructor
-public class Company extends BaseEntity{
+public class Company extends BaseEntity {
     @Id
     @Column(name = "company_id")
     @UuidGenerator
@@ -49,6 +53,7 @@ public class Company extends BaseEntity{
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
+
     public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID userId) {
         Company company = new Company();
         company.companyName = companyName;
@@ -66,11 +71,14 @@ public class Company extends BaseEntity{
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 업체에 상품이 없습니다."));
     }
 
-    public Company updateCompany(String companyName, UUID hubId, String address) {
-        Company company = new Company();
-        company.companyName = companyName;
-        company.hubId = hubId;
-        company.address = address;
-        return company;
+    public void updateCompany(String companyName, UUID hubId, String address) {
+        if (companyName != null) this.companyName = companyName;
+        if (hubId != null) this.hubId = hubId;
+        if (address != null) this.address = address;
+    }
+
+    public void deletedCompany(UUID userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
     }
 }

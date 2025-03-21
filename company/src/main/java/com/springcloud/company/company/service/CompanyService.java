@@ -56,14 +56,10 @@ public class CompanyService {
     @Transactional
     // 업체 정보 수정
     public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId) {
-        Optional<Company> optionalCompany = companyRepository.findByUserId(userId);
-        Company company = optionalCompany.orElseThrow(() -> new NoSuchElementException("Product not found"));
+        Company company = companyRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
 
         //업체 엔티티 수정
-        company.updateCompany(requestDto.getCompanyName(),requestDto.getHubId(),requestDto.getAddress());
-
-        //업체 엔티티 DB 반영
-        companyRepository.save(company);
+        company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress());
 
         return new CompanyResponseDto(company);
     }
@@ -78,12 +74,9 @@ public class CompanyService {
 
     // 업체 삭제
     @Transactional
-    public void deleteCompany(UUID companyId) {
-        Optional<Company> optionalCompany = companyRepository.findById(companyId);
-
-        Company company = optionalCompany.orElseThrow(() -> new NoSuchElementException("company not found"));
-
-        companyRepository.delete(company);
+    public void deleteCompany(UUID companyId, UUID userId) {
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("company not found"));
+        company.deletedCompany(userId);
 
     }
 

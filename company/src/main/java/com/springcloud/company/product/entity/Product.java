@@ -11,7 +11,7 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-//@Where(clause = "deleted_at IS NULL")
+@Where(clause = "deleted_at IS NULL")
 @Getter
 @Entity
 @Table(name= "product") //매핑할 테이블명
@@ -70,7 +70,7 @@ public class Product extends BaseEntity{
 
 
     public void deleteProduct(UUID userId) {
-        delete(String.valueOf(userId));
+        delete(UUID.fromString(String.valueOf(userId)));
     }
 
     public void updateQuantity(int quantity) {

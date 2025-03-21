@@ -32,7 +32,7 @@ public class CompanyController {
             @RequestBody UpdateCompanyRequestDto companyRequestDto
             //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
     ){
-        UUID userId = UUID.fromString("5d884e99-d878-4cba-a632-e15ef328ba45"); //TODO: 업체 등록 시 userId
+        UUID userId = UUID.fromString("a5c5534b-6a26-436e-a14a-ecb498a30a42"); //TODO: 업체 등록 시 userId
         return companyService.updateCompany(companyRequestDto, userId);
 
     }
@@ -54,7 +54,7 @@ public class CompanyController {
     private void deleteCompany(@PathVariable UUID companyId
                                //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
     ){
-        UUID userId = UUID.randomUUID(); // TODO: 임시 데이터
+        UUID userId = UUID.fromString("a5c5534b-6a26-436e-a14a-ecb498a30a42"); //TODO: 업체 등록 시 userId
         companyService.deleteCompany(companyId, userId);
     }
 

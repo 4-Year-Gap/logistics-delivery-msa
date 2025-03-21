@@ -23,6 +23,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
+    private final ProductRockRepository productRockRepository;
 
 
     @Transactional

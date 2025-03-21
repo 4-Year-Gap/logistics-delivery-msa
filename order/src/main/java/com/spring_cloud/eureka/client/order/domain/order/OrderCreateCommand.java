@@ -17,7 +17,7 @@ public class OrderCreateCommand {
     private Integer productQuantity; // 배송 수량
     private Integer productPrice; // 총합 가격
     private String requestMessage;
-    private Integer userId;
+    private UUID userId;
     private String receiverSlackId;
 
 }

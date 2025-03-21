@@ -26,7 +26,7 @@ public class OrderController {
     @PostMapping
     public ApiResponse<?> createOrder(
             @RequestBody OrderCreateRequest orderCreateRequest,
-            @Header(name = "X-USER-ID") Integer userId
+            @Header(name = "X-USER-ID") UUID userId
             ) {
 
 
@@ -50,8 +50,13 @@ public class OrderController {
 
 
     @GetMapping("/{orderId}")
-    public ApiResponse<?> getOneOrderInformationById(@PathVariable(name = "orderId") UUID order_Id){
-        return ApiResponse.ok(orderFacade.getOneOrderInformationById(order_Id));
+    public ApiResponse<?> getOneOrderInformationById(
+            @PathVariable(name = "orderId") UUID orderId,
+            @Header("X-USER-ID") UUID userId,
+            @Header("X-USER-ROLE") String userRole
+                                                     ){
+        OrderReadCommand command = new OrderReadCommand(orderId,userId,userRole);
+        return ApiResponse.ok(orderFacade.getOneOrderInformationById(command));
     }
 
     @GetMapping("/search")

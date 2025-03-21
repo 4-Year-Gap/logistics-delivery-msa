@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -29,8 +30,8 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final HubClient hubClient;
-//    private final DeliveryDriverClient deliveryDriverClient;
     private final UserClient userInfoClient;
+    private final KafkaTemplate<String,IdentityIntegrationDTO> updateKafkaTemplate;
 
 
     public Page<Delivery> getDeliveries(Integer userId, String role, Pageable pageable) {
@@ -62,6 +63,12 @@ public class DeliveryService {
         // 배송 담당자 배정
         Delivery delivery = createDelivery(orderCreateEvent,hubClientResponse,deliveryDriverClientResponse);
 
+        IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                .userId(deliveryDriverClientResponse.getDeliveryDriverId())
+                .orderId(orderCreateEvent.getOrderId())
+                .build();
+
+        updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
         deliveryRepository.save(delivery);
     }
 
@@ -75,7 +82,9 @@ public class DeliveryService {
                 orderCreateEvent.getEndHub(),
                 orderCreateEvent.getReceiverSlackId(),
                 createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse),
-                orderCreateEvent.getUserId()
+                orderCreateEvent.getUserId(),
+                orderCreateEvent.getOrderId(),
+                orderCreateEvent.getCompanyDeliver()
         );
     }
 
@@ -107,18 +116,50 @@ public class DeliveryService {
 
         delivery.setStatus(command.getStatus());
 
+        Integer seq = null;
+        // 허브에서 받음
+        if(command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
 
-        if(command.getArrivedHub().equals(delivery.getEndHubId()) && command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
+            if(command.getArrivedHub().equals(delivery.getEndHubId())){
+                delivery.setStatus(DeliveryStatusEnum.IN_DELIVER);
+                IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                        .orderId(delivery.getOrderId())
+                        .userId(delivery.getCompanyDeliver())
+                        .build();
+                updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
+                return;
+            }
 
-            delivery.setStatus(DeliveryStatusEnum.IN_DELIVER);
+            // 다음 허브 배송 담당자 정하기
+            for(DeliveryHubRoute hubRoute :  delivery.getDeliveryHubRouteList()){
+                if(hubRoute.getDestinationHub().equals(command.getArrivedHub())){
+                    hubRoute.updateDeliveryStatus(DeliveryStatusEnum.ACCEPTED);
+                    seq = hubRoute.getDeliverySequence();
+                }
+            }
 
-            designationCompanyDeliver(delivery);
+            for(DeliveryHubRoute hubRoute :  delivery.getDeliveryHubRouteList()){
+                // 다음 담당자 배정
+                if(hubRoute.getDeliverySequence().equals(seq + 1)) {
+                    hubRoute.setShipperId(getDeliveryDriver());
+                    IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                            .orderId(delivery.getOrderId())
+                            .userId(hubRoute.getShipperId())
+                            .build();
+                    updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
+                }
+
+            }
+
+
+
         }
     }
 
-    private void designationCompanyDeliver(Delivery delivery) {
-        // 업체 배송 담당자 지정 로직
+    private UUID getDeliveryDriver() {
+        return userInfoClient.getRoute().getDeliveryDriverId();
     }
+
 
     @Transactional
     public void deleteDelivery(DeliveryDeleteCommand command) {

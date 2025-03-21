@@ -18,7 +18,7 @@ public class OrderCreateRequest{
     private String requestMessage;
     private String receiverSlackId;
 
-    public OrderCreateCommand toCommand(Integer id){
+    public OrderCreateCommand toCommand(UUID id){
         return OrderCreateCommand.builder()
                 .supplierId(supplierId)
                 .receivingCompanyId(receivingCompanyId)

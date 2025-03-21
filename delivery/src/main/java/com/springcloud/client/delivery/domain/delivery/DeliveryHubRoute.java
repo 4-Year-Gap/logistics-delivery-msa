@@ -72,4 +72,8 @@ public class DeliveryHubRoute {
     public void changeStatus(DeliveryStatusEnum deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
     }
+
+    public void updateDeliveryStatus(DeliveryStatusEnum deliveryStatusEnum) {
+        this.deliveryStatus = deliveryStatusEnum;
+    }
 }

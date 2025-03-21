@@ -2,6 +2,7 @@ package com.spring_cloud.eureka.client.order.config;
 
 
 
+import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationDTO;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -33,12 +34,18 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.user-name}")
     private String username;
-    @Bean
-    public ProducerFactory<String, OrderCreateEvent> producerFactory() {
 
+
+    private Map<String, Object> commonConfig() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);// 타입 정보 생략 가능
+        return configProps;
+    }
+    @Bean
+    public ProducerFactory<String, OrderCreateEvent> orderProducerFactory() {
+
+        Map<String, Object> configProps = new HashMap<>(commonConfig());
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, OrderCreateEvent.class);
         configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
         configProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
@@ -50,14 +57,27 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreateEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, OrderCreateEvent> createKafkaTemplate() {
+        return new KafkaTemplate<>(orderProducerFactory());
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreateEvent> createEventKafkaTemplate(){
-        return new KafkaTemplate<>(producerFactory());
+    public ProducerFactory<String, IdentityIntegrationDTO> userProducerFactory() {
+
+        Map<String, Object> configProps = new HashMap<>(commonConfig());
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IdentityIntegrationDTO.class);
+        configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+        configProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+        String jaasConfig = String.format(
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
+                username, password);
+        configProps.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+        return new DefaultKafkaProducerFactory<>(configProps);
     }
 
+    @Bean
+    public KafkaTemplate<String, IdentityIntegrationDTO> updateKafkaTemplate() {
+        return new KafkaTemplate<>(userProducerFactory());
+    }
 
 }

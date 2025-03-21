@@ -7,6 +7,7 @@ import com.spring_cloud.eureka.client.order.infrastructure.client.dto.*;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 
+import com.spring_cloud.eureka.client.order.interfaces.OrderReadCommand;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,9 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
-    private final KafkaTemplate<String,OrderCreateEvent> kafkaTemplate;
-
+    private final KafkaTemplate<String,OrderCreateEvent> createKafkaTemplate;
+    private final KafkaTemplate<String,IdentityIntegrationDTO> updateKafkaTemplate;
+//
     @Value("${kafka.event.name.order-create}")
     private String ORDER_CREATE_TOPIC;
 
@@ -43,9 +45,6 @@ public class OrderService {
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
         ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
 
-        System.out.println("@@@@@@"+productClientResponse.getEndHub());
-        System.out.println("@@@@@@@@@"+productClientResponse.getStartHub());
-
         //나중에 삭제
         UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
         userInfoClientResponse.setUserId(UUID.randomUUID());
@@ -57,9 +56,14 @@ public class OrderService {
 
         OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,command,productClientResponse);
 
+        IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                .orderId(orderEntity.getOrderId())
+                .userId(command.getUserId())
+                .build();
 
-        kafkaTemplate.send(ORDER_CREATE_TOPIC,KEY_PREFIX + orderCreateEvent.getOrderId(),orderCreateEvent);
-//        kafkaTemplate.send(PRODUCT_DECREASE_TOPIC,orderCreateEvent);
+        createKafkaTemplate.send(ORDER_CREATE_TOPIC,KEY_PREFIX + orderCreateEvent.getOrderId(),orderCreateEvent);
+        createKafkaTemplate.send(PRODUCT_DECREASE_TOPIC,orderCreateEvent);
+        updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
 
         return orderEntity;
     }
@@ -74,20 +78,23 @@ public class OrderService {
                 command.getProductQuantity(),
                 command.getReceiverSlackId(),
                 command.getAddress(),
-                command.getUserId()
+                orderEntity.getOrderedBy(),
+                command.getUserId(),
+                orderEntity.getCompanyDeliver()
         );
     }
 
 
     private OrderEntity orderCreate(UserInfoClientResponse userInfoClientResponse, OrderCreateCommand command) {
         return OrderEntity.create(
-                userInfoClientResponse.getUserName(),
+                userInfoClientResponse.getUserId(),
                 command.getProductId(),
                 command.getProductPrice(),
                 command.getSupplierId(),
                 command.getReceivingCompanyId(),
                 command.getProductQuantity(),
-                command.getRequestMessage()
+                command.getRequestMessage(),
+                userInfoClientResponse.getUserId()// 일단 임시로 생성 나중에 업체 배송 로직 완료 시 배정 후 여기에 저장
         );
     }
 
@@ -96,8 +103,6 @@ public class OrderService {
 
         OrderEntity orderEntity = orderRepository.findById(command.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
-
-//        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
 
         String userName = "testUser";
 
@@ -109,22 +114,29 @@ public class OrderService {
         return new OrderUpdateInfo(orderEntity);
     }
 
-    public OrderEntity getOneOrderInformationById(UUID orderId) {
+    public OrderEntity getOneOrderInformationById(OrderReadCommand command) {
 
-      OrderEntity orderEntity = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
 
-      return orderEntity;
+      if(command.getUserRole().equals("MASTER")){
+          return getOrder(command.getOrderId());
+      } else if (command.getUserRole().equals("HUB_MANAGER")) {
+
+      } else if (command.getUserRole().equals("DELIVERY_MANAGER")) {
+
+
+      } else if (command.getUserRole().equals("COMPANY_MANAGER")) {
+
+
+      }else{
+          throw new IllegalArgumentException("관한이 올바르지 않음");
+      }
+
+      return null;
     }
 
-//    public Page<OrderEntity> getOrders(Integer userId, String userRole, Pageable pageable) {
-//
-//
-//        OrderSearchCondition searchCondition = new OrderSearchCondition(userId,userRole,pageable);
-//
-//
-//        return  orderRepository.search(searchCondition,pageable);
-//
-//    }
 
+    public OrderEntity getOrder(UUID orderId){
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 주문을 찾을 수 없습니다."));
+    }
 }

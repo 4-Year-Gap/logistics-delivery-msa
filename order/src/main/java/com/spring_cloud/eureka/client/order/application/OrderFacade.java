@@ -2,6 +2,7 @@ package com.spring_cloud.eureka.client.order.application;
 
 
 import com.spring_cloud.eureka.client.order.domain.order.*;
+import com.spring_cloud.eureka.client.order.interfaces.OrderReadCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class OrderFacade{
         return orderService.updateOrder(command);
     }
 
-    public OrderEntity getOneOrderInformationById(UUID orderId) {
-        return orderService.getOneOrderInformationById(orderId);
+    public OrderEntity getOneOrderInformationById(OrderReadCommand command) {
+        return orderService.getOneOrderInformationById(command);
     }
 }

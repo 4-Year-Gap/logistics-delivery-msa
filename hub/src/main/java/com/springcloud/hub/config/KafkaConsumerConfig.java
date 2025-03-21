@@ -18,7 +18,7 @@ import java.util.Map;
 // 이 클래스는 Kafka 컨슈머 설정을 위한 Spring 설정 클래스입니다.
 @EnableKafka // Kafka 리스너를 활성화하는 어노테이션입니다.
 @Configuration // Spring 설정 클래스로 선언하는 어노테이션입니다.
-public class ConsumerKafkaConfig {
+public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.host}")
     private String kafkaHost;

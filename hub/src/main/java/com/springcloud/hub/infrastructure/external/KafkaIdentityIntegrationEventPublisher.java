@@ -4,9 +4,11 @@ import com.springcloud.hub.application.dto.CreateIdentityIntegrationCommand;
 import com.springcloud.hub.application.dto.DeleteIdentityIntegrationCommand;
 import com.springcloud.hub.application.dto.UpdateIdentityIntegrationCommand;
 import com.springcloud.hub.infrastructure.dto.IdentityIntegrationCommand;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -57,4 +59,16 @@ public class KafkaIdentityIntegrationEventPublisher implements IdentityIntegrati
                         .build()
         );
     }
+
+//    @KafkaListener(
+//            groupId = "integrated-user-group",
+//            topics = topic,
+//            containerFactory = "kafkaListenerContainerFactory"
+//    )
+//    public void listen(ConsumerRecord<String, IdentityIntegrationCommand> record, Acknowledgment ack) {
+//        System.out.println("Received message: " + record.value());
+//
+//        // 메시지 처리 완료 후 커밋
+//        ack.acknowledge();
+//    }
 }

@@ -1,8 +1,6 @@
 package com.springcloud.hub.config;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import org.springframework.beans.factory.annotation.Value;

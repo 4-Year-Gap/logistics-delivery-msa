@@ -27,7 +27,7 @@ public abstract class BaseEntity {
     @CreatedBy
     @Column(name = "created_by", length = 50, updatable = false)
     @Comment("레코드 생성자")
-    private String createdBy;
+    protected String createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")
@@ -38,7 +38,7 @@ public abstract class BaseEntity {
     @LastModifiedBy
     @Column(name = "updated_by", length = 50)
     @Comment("레코드 수정자")
-    private String updatedBy;
+    protected String updatedBy;
 
     @Column(name = "deleted_at")
     @Temporal(TemporalType.TIMESTAMP)

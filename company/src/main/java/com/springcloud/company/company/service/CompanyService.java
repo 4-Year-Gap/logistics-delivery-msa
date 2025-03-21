@@ -63,7 +63,7 @@ public class CompanyService {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
         //업체 엔티티 수정
-        company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress());
+        company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress(), userId);
 
         return new CompanyResponseDto(company);
     }

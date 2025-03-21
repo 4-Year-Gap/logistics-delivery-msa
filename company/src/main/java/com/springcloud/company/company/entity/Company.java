@@ -11,7 +11,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,6 +60,7 @@ public class Company extends BaseEntity {
         company.userId = userId;
         company.companyType = companyType;
         company.address = address;
+        company.createdBy = String.valueOf(userId);
         return company;
     }
 
@@ -71,14 +71,14 @@ public class Company extends BaseEntity {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 업체에 상품이 없습니다."));
     }
 
-    public void updateCompany(String companyName, UUID hubId, String address) {
+    public void updateCompany(String companyName, UUID hubId, String address, UUID userId) {
         if (companyName != null) this.companyName = companyName;
         if (hubId != null) this.hubId = hubId;
         if (address != null) this.address = address;
+        this.updatedBy = String.valueOf(userId);
     }
 
     public void deletedCompany(UUID userId) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = userId;
+        delete(userId);
     }
 }

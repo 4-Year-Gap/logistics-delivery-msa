@@ -26,24 +26,13 @@ public class CompanyController {
         return companyService.createCompany(companyRequestDto, userId);
     }
 
-    //주문 서버 요청 -> 카프카로 요청
-    @PostMapping("/check")
-    private OrderProductResponseDto getCompanyProductOrder(@RequestBody OrderProductRequestDto requestDto)
-    {
-        UUID receivingCompanyId = requestDto.getReceivingCompanyId();
-        UUID productId = requestDto.getProductId();
-        Integer quantity = requestDto.getQuantity();
-
-        return companyService.readOrderProduct(receivingCompanyId, productId, quantity);
-    }
-
     @Description("업체 수정")
     @PatchMapping
     private CompanyResponseDto updateCompany(
             @RequestBody UpdateCompanyRequestDto companyRequestDto
             //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
     ){
-        UUID userId = UUID.fromString("e7fb3090-17e9-4c26-8914-f224a2fc2074"); // TODO: 임시 데이터 튼튼타이어 -> 강철타이어
+        UUID userId = UUID.fromString("5d884e99-d878-4cba-a632-e15ef328ba45"); //TODO: 업체 등록 시 userId
         return companyService.updateCompany(companyRequestDto, userId);
 
     }
@@ -61,6 +50,17 @@ public class CompanyController {
     ){
         UUID userId = UUID.randomUUID(); // TODO: 임시 데이터
         companyService.deleteCompany(companyId, userId);
+    }
+
+    //주문 서버 요청 - feignClient
+    @PostMapping("/check")
+    private OrderProductResponseDto getCompanyProductOrder(@RequestBody OrderProductRequestDto requestDto)
+    {
+        UUID receivingCompanyId = requestDto.getReceivingCompanyId();
+        UUID productId = requestDto.getProductId();
+        Integer quantity = requestDto.getQuantity();
+
+        return companyService.readOrderProduct(receivingCompanyId, productId, quantity);
     }
 
 

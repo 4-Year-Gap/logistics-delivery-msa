@@ -11,7 +11,7 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Where(clause = "deleted_at IS NULL")
+//@Where(clause = "deleted_at IS NULL")
 @Getter
 @Entity
 @Table(name= "product") //매핑할 테이블명
@@ -64,6 +64,7 @@ public class Product extends BaseEntity{
         product.productName = productName;
         product.price = price;
         product.stock = stock;
+        product.createdBy = String.valueOf(userId);
         return product;
     }
 
@@ -86,20 +87,32 @@ public class Product extends BaseEntity{
         }
     }
 
-    public void updateProduct(String productName, int productPrice, int quantity) {
-        this.productName = productName;
-        this.price = productPrice;
-        // 재고 추가 (quantity > 0)
-        if (quantity > 0) {
-            this.stock += quantity;  // 양수일 경우: 재고 추가
+    public void updateProduct(String productName, Integer productPrice, Integer quantity, UUID userId) {
+        // productName이 null이 아닐 경우에만 업데이트
+        if (productName != null) {
+            this.productName = productName;
         }
-        // 재고 차감 (quantity < 0)
-        else if (quantity < 0) {
-            int quantityToDeduct = -quantity;  // 음수에서 양수로 변환하여 차감
-            if (this.stock < quantityToDeduct) {
-                throw new IllegalArgumentException("재고 부족: 요청한 차감량이 재고보다 많습니다.");
+
+        // productPrice가 null이 아닐 경우에만 업데이트
+        if (productPrice != null) {
+            this.price = productPrice;
+        }
+
+        // quantity가 null이 아닐 경우에만 처리
+        if (quantity != null) {
+            if (quantity > 0) {
+                this.stock += quantity;  // 양수일 경우: 재고 추가
+            } else if (quantity < 0) {
+                int quantityToDeduct = -quantity;  // 음수에서 양수로 변환하여 차감
+                if (this.stock < quantityToDeduct) {
+                    throw new IllegalArgumentException("재고 부족: 요청한 차감량이 재고보다 많습니다.");
+                }
+                this.stock -= quantityToDeduct;  // 재고 차감
             }
-            this.stock -= quantityToDeduct;  // 재고 차감
         }
+
+        // 업데이트 시간과 사용자 정보는 항상 갱신
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = String.valueOf(userId);
     }
 }

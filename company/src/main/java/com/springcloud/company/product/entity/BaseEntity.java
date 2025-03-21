@@ -26,27 +26,27 @@ public abstract class BaseEntity {
     @CreatedBy
     @Column(name = "created_by", length = 50, updatable = false)
     @Comment("레코드 생성자")
-    private String createdBy;
+    protected String createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("레코드 수정 일시")
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
     @LastModifiedBy
     @Column(name = "updated_by", length = 50)
     @Comment("레코드 수정자")
-    private String updatedBy;
+    protected String updatedBy;
 
     @Column(name = "deleted_at")
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("레코드 삭제 일시")
-    protected LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
 
     @Column(name = "deleted_by", length = 50)
     @Comment("레코드 삭제자")
-    protected String deletedBy;
+    private String deletedBy;
 
     public void delete(String deletedBy) {
         this.deletedBy = deletedBy;

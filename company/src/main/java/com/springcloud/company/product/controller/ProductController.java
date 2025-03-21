@@ -16,12 +16,13 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @Description("상품 등록")
     @PostMapping
     public ProductResponseDto createProduct(
             @RequestBody ProductRequestDto requestDto
             //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
     ){
-        UUID userId = UUID.fromString("1512a8fe-f5c3-4ac8-998e-84c2fc2bab7d"); //UUID.randomUUID();  TODO: 임시 데이터
+        UUID userId = UUID.fromString("84402bb8-f79d-41f0-8190-544e52577910"); //UUID.randomUUID();  TODO: 임시 데이터
         //응답 보내기
         return productService.createProduct(requestDto,userId);
     }
@@ -29,14 +30,16 @@ public class ProductController {
     @Description("상품 수정(재고 포함)")
     @PatchMapping("/{productId}")
     public ProductResponseDto updateProductStock(@PathVariable UUID productId, @RequestBody UpdateProductRequestDto RequestDto
-    ){
-        return productService.updateProduct(productId,RequestDto);
+                                                 //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
+    ) {
+        UUID userId = UUID.fromString("84402bb8-f79d-41f0-8190-544e52577910");
+        return productService.updateProduct(productId,RequestDto,userId);
     }
 
     @Description("상품 전체 조회")
     @GetMapping
     public List<ProductResponseDto> getAllProducts() {
-        return productService.getAllProduct();
+        return productService.getAllProducts();
     }
 
     @Description("상품 상세 조회")

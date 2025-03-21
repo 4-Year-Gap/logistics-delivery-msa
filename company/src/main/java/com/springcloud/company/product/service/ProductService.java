@@ -56,21 +56,27 @@ public class ProductService {
 
 //        // DB 반영
 //        Product save = productRepository.save(product);
-
     }
 
     @Transactional
     //상품 수정_업체 -> 상품 수정
-    public ProductResponseDto updateProduct(UUID productId, UpdateProductRequestDto requestDto) {
+    public ProductResponseDto updateProduct(UUID productId, UpdateProductRequestDto requestDto, UUID userId) {
         Product product = productRockRepository.findByIdWithLock(productId)
                 .orElseThrow(() -> new NoSuchElementException("Product not found"));
-        product.updateProduct(requestDto.getProductName(),requestDto.getProductPrice(),requestDto.getQuantity());
+
+        // 업체 담당자인지 확인
+        Company company = product.getCompany();
+        if (!company.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("이 유저는 해당 상품을 삭제할 권한이 없습니다.");
+        }
+
+        product.updateProduct(requestDto.getProductName(),requestDto.getProductPrice(),requestDto.getQuantity(),userId);
 
         return new ProductResponseDto(product);
     }
 
-
-    public List<ProductResponseDto> getAllProduct() {
+    // 전체 상품 조회_ 어떤 권한도 접근 가능
+    public List<ProductResponseDto> getAllProducts() {
         List<Product> productList = productRepository.findAll();
 
         return productList.stream()
@@ -78,7 +84,7 @@ public class ProductService {
                 .toList();
     }
 
-
+    //상품 상세 조회_권한 설정 필요
     public ProductResponseDto getProduct(UUID productId) {
         Company company = companyService.getCompanyByProductId(productId);
 
@@ -89,11 +95,13 @@ public class ProductService {
 
         return new ProductResponseDto(product);
     }
-
+    
+    //업체담당자가 등록했던 상품들 조회_권한 설정 필요
     public List<ProductResponseDto> getProducts(UUID userId) {
+        //업체 담당자인지 확인 절차가 포함됨
         Company company = companyRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저 ID에 대한 회사 정보가 없습니다."));
-
+        
         List<Product> productList = company.getProducts();
 
         return productList.stream()

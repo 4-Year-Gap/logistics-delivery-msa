@@ -1,10 +1,17 @@
 package com.springcloud.hub.infrastructure.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.springcloud.hub.application.dto.FindHubQuery;
+import com.springcloud.hub.application.dto.SearchHubQuery;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.entity.QHub;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,12 +23,12 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<Hub> findHubById(UUID hubId) {
+    public Optional<Hub> findById(UUID hubId) {
         QHub hub = QHub.hub;
 
         return Optional.ofNullable(
                 queryFactory.selectFrom(hub)
-                        .where(hub.Id.eq(hubId).and(hub.isDeleted.eq(false)))
+                        .where(hub.Id.eq(hubId).and(hub.deletedAt.isNull()))
                         .fetchOne()
         );
     }
@@ -30,7 +37,38 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
     public List<Hub> findAllHubs() {
         QHub hub = QHub.hub;
         return queryFactory.selectFrom(hub)
-                .where(hub.isDeleted.eq(false))
+                .where(hub.deletedAt.isNull())
                 .fetch();
+    }
+
+    @Override
+    public Page<Hub> findAllHubs(SearchHubQuery searchHubQuery, Pageable pageable) {
+        QHub hub = QHub.hub;
+
+        List<Hub> content = queryFactory
+                .selectFrom(hub)
+                .where(
+                        hub.deletedAt.isNull(),
+                        nameContains(searchHubQuery.name())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(hub.count())
+                .from(hub)
+                .where(
+                        hub.deletedAt.isNull(),
+                        nameContains(searchHubQuery.name())
+                )
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    // name이 null이 아닐 경우 LIKE 검색 적용
+    private BooleanExpression nameContains(String name) {
+        return StringUtils.hasText(name) ? QHub.hub.name.containsIgnoreCase(name) : null;
     }
 }

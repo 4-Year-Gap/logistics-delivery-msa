@@ -16,6 +16,7 @@ public class OrderCreateRequest{
     private Integer productQuantity; // 배송 수량
     private Integer productPrice; // 총합 가격
     private String requestMessage;
+    private String receiverSlackId;
 
     public OrderCreateCommand toCommand(Integer id){
         return OrderCreateCommand.builder()
@@ -27,6 +28,7 @@ public class OrderCreateRequest{
                 .productPrice(productPrice)
                 .requestMessage(requestMessage)
                 .userId(id)
+                .receiverSlackId(receiverSlackId)
                 .build();
     }
 }

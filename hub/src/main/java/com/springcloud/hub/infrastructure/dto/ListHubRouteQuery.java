@@ -1,6 +1,5 @@
 package com.springcloud.hub.infrastructure.dto;
 
-import com.springcloud.hub.domain.entity.Hub;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,12 +11,10 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FindHubRouteQuery {
+public class ListHubRouteQuery {
     private UUID id;
-    private UUID toHubId;
-    private UUID fromHubId;
-    private Hub toHub;
-    private Hub fromHub;
+    private String fromAddress;
+    private String toAddress;
     private BigDecimal moveDistance;
     private LocalTime timeRequired;
 }

@@ -2,10 +2,10 @@ package com.springcloud.hub.domain.service;
 
 import com.springcloud.hub.application.dto.FindHubQuery;
 import com.springcloud.hub.application.dto.FindNaverRouteQuery;
-import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import com.springcloud.hub.application.dto.ListHubQuery;
 import com.springcloud.hub.domain.repository.HubRouteReader;
-import com.springcloud.hub.infrastructure.dto.FindHubRouteQuery;
+import com.springcloud.hub.infrastructure.dto.GetHubRouteQuery;
+import com.springcloud.hub.interfaces.exception.CustomNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.springcloud.hub.domain.entity.Hub;
@@ -21,6 +21,14 @@ public class HubRouteService {
     private final HubRouteReader hubRouteReader;
 
     /**
+     * 주어진 허브 라우터 ID를 기반으로 허브를 조회하고, 존재하지 않으면 예외를 던짐
+     */
+    public HubRoute findById(UUID hubId) {
+        return hubRouteReader.findById(hubId)
+                .orElseThrow(() -> new CustomNotFoundException("허브 라우터 정보를 찾을 수 없습니다."));
+    }
+
+    /**
      * 경로 정보를 기반으로 HubRoute 엔티티를 생성
      */
     public HubRoute createHubRoute(Hub startHub, Hub goalHub, FindNaverRouteQuery findNaverRouteQuery) {
@@ -30,7 +38,6 @@ public class HubRouteService {
                 .toHub(goalHub)
                 .timeRequired(findNaverRouteQuery.timeRequired())
                 .moveDistance(findNaverRouteQuery.moveDistance())
-                .isDeleted(false)
                 .build();
     }
 
@@ -46,10 +53,10 @@ public class HubRouteService {
     /**
      * 다익스트라 알고리즘
      */
-    public List<GetHubRouteQuery> dijkstra(FindHubQuery start, FindHubQuery end) {
+    public List<com.springcloud.hub.application.dto.GetHubRouteQuery> dijkstra(FindHubQuery start, FindHubQuery end) {
         Map<FindHubQuery, BigDecimal> distances = new HashMap<>();
         Map<FindHubQuery, FindHubQuery> previous = new HashMap<>();
-        Map<FindHubQuery, FindHubRouteQuery> routeInfo = new HashMap<>();  // 경로 정보를 저장할 맵
+        Map<FindHubQuery, GetHubRouteQuery> routeInfo = new HashMap<>();  // 경로 정보를 저장할 맵
         PriorityQueue<FindHubQuery> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
 
         // 초기 거리 설정
@@ -63,10 +70,10 @@ public class HubRouteService {
             if (current.equals(end)) break;
 
             // 현재 허브에서 이동 가능한 경로 탐색
-            List<FindHubRouteQuery> routes = hubRouteReader.findByFromHubWithToHub(current);
+            List<GetHubRouteQuery> routes = hubRouteReader.findByFromHubWithToHub(current);
 
-            for (FindHubRouteQuery route : routes) {
-                FindHubQuery neighbor = new FindHubQuery(route.getToHub());
+            for (GetHubRouteQuery route : routes) {
+                FindHubQuery neighbor = FindHubQuery.fromFindHubQuery(route.getToHub());
                 //현재까지 이동한 거리 + 이번에 이동할 거리를 더해서 새로운 거리를 계산
                 BigDecimal newDist = distances.get(current).add(route.getMoveDistance());
 
@@ -89,16 +96,16 @@ public class HubRouteService {
         Collections.reverse(path);
 
         // 결과 DTO 생성
-        List<GetHubRouteQuery> resultPath = new ArrayList<>();
+        List<com.springcloud.hub.application.dto.GetHubRouteQuery> resultPath = new ArrayList<>();
         for (int i = 0; i < path.size(); i++) {
             FindHubQuery hub = path.get(i);
 
             if (i == 0) {
                 // 첫 번째 허브는 이전 경로 정보가 없음
-                resultPath.add(new GetHubRouteQuery(hub, i + 1));
+                resultPath.add(new com.springcloud.hub.application.dto.GetHubRouteQuery(hub, i + 1));
             } else {
-                FindHubRouteQuery routeDetails = routeInfo.get(hub);
-                resultPath.add(new GetHubRouteQuery(
+                GetHubRouteQuery routeDetails = routeInfo.get(hub);
+                resultPath.add(new com.springcloud.hub.application.dto.GetHubRouteQuery(
                         hub,
                         i + 1,  // 시퀀스 번호
                         routeDetails.getMoveDistance(),

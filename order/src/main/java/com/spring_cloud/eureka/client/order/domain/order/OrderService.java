@@ -10,6 +10,7 @@ import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepos
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -27,18 +28,23 @@ public class OrderService {
     private final ProductClient productClient;
     private final KafkaTemplate<String,OrderCreateEvent> kafkaTemplate;
 
+    @Value("${kafka.event.name.order-create}")
+    private String ORDER_CREATE_TOPIC;
+
+    @Value("${kafka.event.name.product_decrease}")
+    private String PRODUCT_DECREASE_TOPIC;
+
+    private String KEY_PREFIX = "ORDER_ID : ";
+
     @Transactional
     public OrderEntity createOrder(OrderCreateCommand command) {
 
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
-//        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
-        ProductClientResponse productClientResponse  = new ProductClientResponse();
-        productClientResponse.setStartHub(UUID.randomUUID());
-        productClientResponse.setProductId(UUID.randomUUID());
-        productClientResponse.setEndHub(UUID.randomUUID());
+        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
 
-//        UserInfoClientResponse userInfoClientResponse = userInfoClient.getUserInfo(userId).data();
+        System.out.println("@@@@@@"+productClientResponse.getEndHub());
+        System.out.println("@@@@@@@@@"+productClientResponse.getStartHub());
 
         //나중에 삭제
         UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
@@ -52,9 +58,8 @@ public class OrderService {
         OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity,command,productClientResponse);
 
 
-
-        kafkaTemplate.send("order_topic","asd",orderCreateEvent);
-//        kafkaTemplate.send("product_decrease",orderCreateEvent.toJson());
+        kafkaTemplate.send(ORDER_CREATE_TOPIC,KEY_PREFIX + orderCreateEvent.getOrderId(),orderCreateEvent);
+//        kafkaTemplate.send(PRODUCT_DECREASE_TOPIC,orderCreateEvent);
 
         return orderEntity;
     }
@@ -66,7 +71,10 @@ public class OrderService {
                 productClientResponse.getStartHub(),
                 productClientResponse.getEndHub(),
                 productClientResponse.getProductId(),
-                command.getProductQuantity()
+                command.getProductQuantity(),
+                command.getReceiverSlackId(),
+                command.getAddress(),
+                command.getUserId()
         );
     }
 

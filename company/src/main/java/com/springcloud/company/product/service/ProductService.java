@@ -23,7 +23,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
-    private final ProductRockRepository productRockRepository;
 
 
     @Transactional
@@ -95,13 +94,13 @@ public class ProductService {
 
         return new ProductResponseDto(product);
     }
-    
+
     //업체담당자가 등록했던 상품들 조회_권한 설정 필요
     public List<ProductResponseDto> getProducts(UUID userId) {
         //업체 담당자인지 확인 절차가 포함됨
         Company company = companyRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저 ID에 대한 회사 정보가 없습니다."));
-        
+
         List<Product> productList = company.getProducts();
 
         return productList.stream()

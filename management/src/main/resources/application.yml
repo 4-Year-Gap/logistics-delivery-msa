@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: management-service
+
+  datasource:
+    url: jdbc:mysql://${Mysql_host}:3306/management
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${Mysql_name}
+    password: ${Mysql_password}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show-sql: true
+        format-sql: true
+
+slack:
+  key: ${Slack_key}
+  channel: ${Slack_channel}
+
+ai:
+  api:
+    key: ${AI_key}
+    url: ${AI_url}
+
+server:
+  port: 19094
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${Eureka_name}:${Eureka_password}@${Eureka_host}:19090/eureka/
+  instance:
+    hostname: ${My_host}
+    securePortEnabled: true
+    nonSecurePortEnabled: false
+    securePort: 443
+    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
+    homePageUrl: https://${eureka.instance.hostname}/
+    preferIpAddress: false
+    secureVirtualHostName: ${spring.application.name}

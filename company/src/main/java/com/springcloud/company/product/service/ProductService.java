@@ -53,9 +53,6 @@ public class ProductService {
                 .orElseThrow(() -> new NoSuchElementException("Product not found"));
         // 상품 도메인 재고차감 로직
         product.updateQuantity(orderCreateEvent.getProductQuantity());
-
-//        // DB 반영
-//        Product save = productRepository.save(product);
     }
 
     @Transactional

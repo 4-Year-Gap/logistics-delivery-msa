@@ -63,8 +63,10 @@ public class HubRouteFacade {
      * 허브간 최소 거리 구하기 (다익스트라 알고리즘)
      */
     public List<GetHubRouteQuery> findShortestPath(GetHubRouteRequest requestDto) {
+
+        GetHubRouteCacheQuery getHubRouteCacheQuery = GetHubRouteCacheQuery.fromRequestParam(requestDto);
         // 캐시 검증
-        List<GetHubRouteQuery> cachedRoute = hubRouteCacheStore.getShortestPath(requestDto, requestDto);
+        List<GetHubRouteQuery> cachedRoute = hubRouteCacheStore.getShortestPath(getHubRouteCacheQuery);
 
         if (cachedRoute != null) {
             return cachedRoute;

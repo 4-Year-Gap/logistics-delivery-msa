@@ -33,7 +33,7 @@ public abstract class BaseEntity {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("레코드 수정 일시")
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
     @LastModifiedBy
     @Column(name = "updated_by", length = 50)

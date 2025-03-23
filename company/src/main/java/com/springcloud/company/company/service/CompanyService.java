@@ -5,6 +5,7 @@ import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.infrastructure.external.IdentityIntegrationEventPublisher;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
+import com.springcloud.company.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,9 @@ import java.util.*;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final IdentityIntegrationEventPublisher eventPublisher;
 
+    private final IdentityIntegrationEventPublisher eventPublisher;
+  
     public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
         Company company = Company.create(
                 RequestDto.getCompanyName(),
@@ -117,4 +119,9 @@ public class CompanyService {
         return companyRepository.findByProducts_Id(productId).orElseThrow();
     }
 
+    public void deleteProduct(UUID productId) {
+        Company company = getCompanyByProductId(productId);
+        company.removeProductByProductId(productId);
+        companyRepository.save(company);
+    }
 }

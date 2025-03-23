@@ -81,4 +81,9 @@ public class Company extends BaseEntity {
     public void deletedCompany(UUID userId) {
         delete(userId);
     }
+
+    public void removeProductByProductId(UUID productId) {
+        Product product = getProductById(productId);
+        products.remove(product);
+    }
 }

@@ -1,7 +1,7 @@
 package com.springcloud.client.user.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springcloud.client.user.infrastructure.IdentityIntegrationDto;
+import com.springcloud.client.user.domain.IdentityIntegrationCacheData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,36 +35,16 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
-//    @Bean
-//    public RedisTemplate<String, IdentityIntegrationDto> redisTemplate(RedisConnectionFactory connectionFactory) {
-//        RedisTemplate<String, IdentityIntegrationDto> template = new RedisTemplate<>();
-//        template.setConnectionFactory(connectionFactory);
-//
-//        // JSON 직렬화 설정
-//        Jackson2JsonRedisSerializer<IdentityIntegrationDto> serializer = new Jackson2JsonRedisSerializer<>(IdentityIntegrationDto.class);
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.registerModule(new JavaTimeModule());
-//        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-//        serializer.setObjectMapper(objectMapper);
-//
-//        // Key는 String, Value는 JSON 직렬화
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setValueSerializer(serializer);
-//
-//        template.afterPropertiesSet();
-//        return template;
-//    }
-
     @Bean
-    public RedisTemplate<String, IdentityIntegrationDto> redisTemplate() {
-        RedisTemplate<String, IdentityIntegrationDto> template = new RedisTemplate<>();
+    public RedisTemplate<String, IdentityIntegrationCacheData> redisTemplate() {
+        RedisTemplate<String, IdentityIntegrationCacheData> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
         template.setKeySerializer(RedisSerializer.string());
         template.setHashKeySerializer(RedisSerializer.string());
 //        template.setHashValueSerializer(RedisSerializer.json());
         ObjectMapper objectMapper = new ObjectMapper();
-        Jackson2JsonRedisSerializer<IdentityIntegrationDto> serializer = new Jackson2JsonRedisSerializer<>(IdentityIntegrationDto.class);
+        Jackson2JsonRedisSerializer<IdentityIntegrationCacheData> serializer = new Jackson2JsonRedisSerializer<>(IdentityIntegrationCacheData.class);
 
         template.setHashValueSerializer(serializer);
 

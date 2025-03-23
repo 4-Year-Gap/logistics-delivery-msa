@@ -4,5 +4,5 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public interface MessageListener {
 
-    void consumeMessage(ConsumerRecord<String, IdentityIntegrationDto> record);
+    void consumeMessage(ConsumerRecord<String, IdentityIntegrationMessage> record);
 }

@@ -36,6 +36,6 @@ public class DeliveryDriver extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    @Comment("배송 기사 권한")
+    @Comment("배송 기사 역할 (허브 or 업체)")
     private DeliveryDriverRole role;
 }

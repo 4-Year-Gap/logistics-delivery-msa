@@ -10,12 +10,14 @@ import java.util.UUID;
 public class DeliveryCommand {
 
     private UUID userId;
+    private UUID hubId;
 
     public DeliveryDriver toEntity(User user, int deliveryOrderNumber) {
         return DeliveryDriver.builder()
                 .user(user)
+                .hubId(this.hubId)
                 .deliveryOrderNumber(deliveryOrderNumber)
-                .role(DeliveryDriverRole.HUB)
+                .role(hubId == null ? DeliveryDriverRole.HUB : DeliveryDriverRole.COMPANY)
                 .build();
     }
 }

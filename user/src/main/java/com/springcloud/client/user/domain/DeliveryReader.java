@@ -10,7 +10,9 @@ public interface DeliveryReader {
 
     List<DeliveryDriver> findAllByRoleOrderByDeliveryOrderNumberAsc(DeliveryDriverRole role);
 
-    DeliveryAssignment findWithLock(int pk);
+    DeliveryAssignment findWithLock(DeliveryDriverRole driverType);
 
     Optional<DeliveryDriver> findById(UUID userId);
+
+    List<DeliveryDriver> findAllByHubIdAndRoleOrderByDeliveryOrderNumberAsc(UUID hubId, DeliveryDriverRole role);
 }

@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Getter
 public class OrderCreateRequest{
-
     private UUID supplierId;// 제품 공급 업체
     private UUID receivingCompanyId;// 제품 수요 업체
     private UUID productId; // 주문한 제품

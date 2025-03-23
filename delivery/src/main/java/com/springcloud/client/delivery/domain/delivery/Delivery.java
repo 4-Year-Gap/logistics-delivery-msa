@@ -52,21 +52,21 @@ public class Delivery extends BaseEntity {
 
     @Column(nullable = false)
     @Comment("배송 받는 사람 ID")
-    private Integer receiverId;
+    private UUID receiverId;
 
     @Comment("업체 배송 담당자")
     @Column(nullable = true)
     private UUID companyDeliver;
 
-    @OneToMany(mappedBy = "deliveryId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryHubRoute> deliveryHubRouteList;
 
     public static Delivery create(String address,
                                   DeliveryStatusEnum deliveryStatusEnum,
-                                  UUID startHub, UUID endHub,
+                                  UUID startHub,
+                                  UUID endHub,
                                   String slackId,
-                                  List<DeliveryHubRoute> deliveryHubRouteList,
-                                  Integer receiverId,
+                                  UUID receiverId,
                                   UUID orderId,
                                   UUID companyDeliver
     )
@@ -77,7 +77,6 @@ public class Delivery extends BaseEntity {
                 .startHubId(startHub)
                 .endHubId(endHub)
                 .receiverSlackId(slackId)
-                .deliveryHubRouteList(deliveryHubRouteList)
                 .receiverId(receiverId)
                 .orderId(orderId)
                 .companyDeliver(companyDeliver)

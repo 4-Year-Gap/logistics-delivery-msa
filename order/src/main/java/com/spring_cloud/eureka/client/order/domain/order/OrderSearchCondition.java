@@ -12,6 +12,4 @@ public class OrderSearchCondition {
     private Integer userId;
     private String userRole;
 
-    private Pageable pageable;
-
 }

@@ -17,7 +17,12 @@ spring:
     bootstrap-servers: ${Kafka_host}:9092
     user-name: ${Kafka_name}
     password: ${Kafka_password}
-
+  data:
+    redis:
+      host: ${Redis_host}
+      port: 6379
+      username: ${Redis_name}
+      password: ${Redis_password}
 
 
 server:
@@ -45,3 +50,4 @@ kafka:
     name:
       order-create: order-topic
       product_decrease: product_decrease
+      integrated-user-topic: integrated-user-topic

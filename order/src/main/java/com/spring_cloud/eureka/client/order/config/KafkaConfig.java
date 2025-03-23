@@ -2,13 +2,12 @@ package com.spring_cloud.eureka.client.order.config;
 
 
 
-import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationDTO;
+import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationCommand;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.common.serialization.UUIDSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,6 @@ import org.springframework.kafka.core.ProducerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Configuration
 public class KafkaConfig {
@@ -62,10 +60,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, IdentityIntegrationDTO> userProducerFactory() {
+    public ProducerFactory<String, IdentityIntegrationCommand> userProducerFactory() {
 
         Map<String, Object> configProps = new HashMap<>(commonConfig());
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IdentityIntegrationDTO.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IdentityIntegrationCommand.class);
         configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
         configProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         String jaasConfig = String.format(
@@ -76,7 +74,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, IdentityIntegrationDTO> updateKafkaTemplate() {
+    public KafkaTemplate<String, IdentityIntegrationCommand> updateKafkaTemplate() {
         return new KafkaTemplate<>(userProducerFactory());
     }
 

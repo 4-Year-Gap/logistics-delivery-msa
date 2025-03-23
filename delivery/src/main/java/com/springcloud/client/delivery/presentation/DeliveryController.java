@@ -62,6 +62,17 @@ public class DeliveryController {
         return ApiResponse.ok("delete complete");
     }
 
+    @GetMapping("/hub")
+    public UUID getOrderIdToHubId(@RequestParam UUID hubId, @RequestParam UUID orderId) {
+        return deliveryService.getOrderIdToHubId(hubId,orderId);
+    }
+
+
+    @GetMapping("/deliver")
+    public UUID getOrderIdToDeliver(@RequestParam UUID orderId, @RequestParam UUID userId){
+        return deliveryService.getOrderIdToDeliver(orderId,userId);
+    }
+
     @GetMapping("/test")
     public ApiResponse<?> deleteDelivery(){
 

@@ -11,5 +11,5 @@ import java.util.UUID;
 public class OrderUpdateCommand {
     private UUID orderId;
     private OrderEntityStatus orderEntityStatus;
-    private Integer userId;
+    private UUID userId;
 }

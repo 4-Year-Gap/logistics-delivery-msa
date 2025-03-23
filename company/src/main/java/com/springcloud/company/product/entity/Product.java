@@ -48,6 +48,7 @@ public class Product extends BaseEntity{
 
     @Column(nullable = false)
     @Comment("출고 가능 수량")
+    @Setter
     private Integer stock;
 
 

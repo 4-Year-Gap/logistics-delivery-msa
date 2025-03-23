@@ -1,12 +1,15 @@
 package com.springcloud.company.product.controller;
 
 import com.springcloud.company.product.dto.*;
+import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
@@ -66,8 +69,15 @@ public class ProductController {
         productService.deleteProduct(productId,userId);
     }
 
-
-
-
-
+    @PostMapping("/stock/test")
+    public ResponseEntity<String> updateStock(@RequestBody OrderCreateEvent orderCreateEvent) {
+        try {
+            productService.updateStockTest(orderCreateEvent);
+            return ResponseEntity.ok("Stock updated successfully");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

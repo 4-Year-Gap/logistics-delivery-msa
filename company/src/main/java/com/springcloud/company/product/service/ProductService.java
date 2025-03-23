@@ -10,27 +10,40 @@ import com.springcloud.company.product.entity.Product;
 import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.repository.ProductRepository;
 import com.springcloud.company.product.repository.ProductRockRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
     private final ProductRockRepository productRockRepository;
+    private final RedissonClient redissonClient;
+    private final StringRedisTemplate redisTemplate;
 
+
+    private static final String STOCK_KEY_PREFIX = "product:stock:";
+    private static final String LOCK_KEY_PREFIX = "product:lock:";
 
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId) {
         //유저 ID를 통해 업체 조회
         Company company = companyRepository.findByUserId(userId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 유저의 업체를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 업체를 찾을 수 없습니다."));
 
         //객체 생성
         Product product = Product.create(
@@ -48,12 +61,119 @@ public class ProductService {
     //상품 수정_주문 -> 재고 차감 로직 메서드
     @Transactional
     public void updateStock(OrderCreateEvent orderCreateEvent) {
-
         Product product = productRockRepository.findByIdWithLock(orderCreateEvent.getProductId())
                 .orElseThrow(() -> new NoSuchElementException("Product not found"));
         // 상품 도메인 재고차감 로직
         product.updateQuantity(orderCreateEvent.getProductQuantity());
     }
+
+    //상품 수정_주문 -> 재고 차감 로직 메서드
+    @Transactional
+    public void updateStockTest(OrderCreateEvent orderCreateEvent) {
+        System.out.println("test");
+    }
+
+
+    /**
+     * 초기화 메서드: 애플리케이션 시작 시 모든 상품의 재고를 Redis에 캐싱
+     */
+    @PostConstruct
+    public void initializeStockCache() {
+        List<Product> allProducts = productRepository.findAll();
+        for (Product product : allProducts) {
+            String stockKey = STOCK_KEY_PREFIX + product.getId();
+            redisTemplate.opsForValue().set(stockKey, String.valueOf(product.getStock()));
+        }
+    }
+
+    /**
+     * Redis를 주 스토리지로 사용하는 재고 업데이트 메서드
+     * DB는 주기적으로 동기화하거나 장애 복구용으로 사용
+     */
+    @Transactional
+    public void updateStockRedisWithLua(OrderCreateEvent orderCreateEvent) {
+        UUID productId = orderCreateEvent.getProductId();
+        String stockKey = STOCK_KEY_PREFIX + productId;
+        int quantity = orderCreateEvent.getProductQuantity();
+
+        // Lua 스크립트 정의
+        String script =
+                "local current = redis.call('get', KEYS[1]) " +
+                        "if current == false then " +
+                        "   return nil " +  // 키가 존재하지 않는 경우
+                        "end " +
+                        "local newStock = tonumber(current) + tonumber(ARGV[1]) " +
+                        "if tonumber(ARGV[1]) < 0 and newStock < 0 then " +
+                        "   return false " +  // 재고 부족
+                        "end " +
+                        "redis.call('set', KEYS[1], tostring(newStock)) " + // 값 저장 시 tostring 사용
+                        "return tonumber(newStock)";
+
+        // 스크립트 실행
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+        Long result = redisTemplate.execute(
+                redisScript,
+                Collections.singletonList(stockKey),
+                String.valueOf(quantity)
+        );
+
+        if (result == null) {
+            throw new RuntimeException("Product not found in stock.");
+        }
+        if (result == -1) {
+            throw new RuntimeException("Insufficient stock.");
+        }
+
+        log.info("Updated stock: " + result);
+    }
+
+
+    /**
+     * 데이터베이스 재고 동기화 (즉시 업데이트)
+     */
+    @Transactional
+    protected void updateDatabaseStock(UUID productId, int newStock) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NoSuchElementException("Product not found"));
+
+        // 재고 변경 (도메인 메서드 직접 호출하지 않고 값만 설정)
+        product.setStock(newStock);
+        productRepository.save(product);
+    }
+
+
+    /**
+     * 주기적으로 모든 Redis 재고 값을 DB에 동기화하는 스케줄러 메서드
+     * (예: @Scheduled 어노테이션으로 주기적 실행)
+     */
+    @Transactional
+    public void syncAllStocksToDatabase() {
+        Set<String> stockKeys = redisTemplate.keys(STOCK_KEY_PREFIX + "*");
+        if (stockKeys == null || stockKeys.isEmpty()) {
+            return;
+        }
+
+        for (String key : stockKeys) {
+            String productIdStr = key.substring(STOCK_KEY_PREFIX.length());
+            UUID productId = UUID.fromString(productIdStr);
+            String stockStr = redisTemplate.opsForValue().get(key);
+
+            if (stockStr != null) {
+                int stock = Integer.parseInt(stockStr);
+
+                try {
+                    Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new NoSuchElementException("Product not found"));
+                    product.setStock(stock);
+                    productRepository.save(product);
+                } catch (Exception e) {
+                    // 로깅 및 오류 처리
+                    // 실패한 항목은 재시도 큐에 넣을 수 있음
+                }
+            }
+        }
+    }
+
 
     @Transactional
     //상품 수정_업체 -> 상품 수정
@@ -67,7 +187,7 @@ public class ProductService {
             throw new IllegalArgumentException("이 유저는 해당 상품을 삭제할 권한이 없습니다.");
         }
 
-        product.updateProduct(requestDto.getProductName(),requestDto.getProductPrice(),requestDto.getQuantity(),userId);
+        product.updateProduct(requestDto.getProductName(), requestDto.getProductPrice(), requestDto.getQuantity(), userId);
 
         return new ProductResponseDto(product);
     }
@@ -86,7 +206,7 @@ public class ProductService {
         Company company = companyService.getCompanyByProductId(productId);
 
         Product product = company.getProducts().stream()
-                .filter( p -> p.getId().equals(productId))
+                .filter(p -> p.getId().equals(productId))
                 .findAny()
                 .orElseThrow();
 
@@ -107,6 +227,7 @@ public class ProductService {
 
 
     }
+
     @Transactional
     public void deleteProduct(UUID productId, UUID userId) {
         Company company = companyService.getCompanyByProductId(productId);
@@ -116,7 +237,7 @@ public class ProductService {
             throw new IllegalArgumentException("이 유저는 해당 상품을 삭제할 권한이 없습니다.");
         }
         Product product = company.getProducts().stream()
-                .filter( p -> p.getId().equals(productId))
+                .filter(p -> p.getId().equals(productId))
                 .findAny()
                 .orElseThrow();
 

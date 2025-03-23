@@ -20,16 +20,19 @@ spring:
     username: ${Kafka_name}
     password: ${Kafka_password}
 
-#  data:
-#    redis:
-#      host: ${Redis_host}
-#      port: 6379
-#      username: ${Redis_name}
-#      password: ${Redis_password}
+  data:
+    redis:
+      host: ${Redis_host}
+      port: 6379
+      username: ${Redis_name}
+      password: ${Redis_password}
 
 
 server:
   port: 19092
+  tomcat:
+    connection-timeout: 30s
+    max-connections: 200
 
 eureka:
   client:

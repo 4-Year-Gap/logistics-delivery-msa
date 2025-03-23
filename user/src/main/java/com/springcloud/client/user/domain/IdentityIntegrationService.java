@@ -18,11 +18,9 @@ public class IdentityIntegrationService {
 
         if (command.getEventType().equals("CREATE")) {
             createIdentity(command, fieldKey);
-        }
-        if (command.getEventType().equals("UPDATE")) {
+        } else if (command.getEventType().equals("UPDATE")) {
             updateIdentity(command, fieldKey);
-        }
-        if (command.getEventType().equals("DELETE")) {
+        } else if (command.getEventType().equals("DELETE")) {
             deleteIdentity(command, fieldKey);
         }
     }
@@ -37,14 +35,11 @@ public class IdentityIntegrationService {
 
         if (command.getHubId() != null) {
             existingData.setHubId(command.getHubId());
-        }
-        if (command.getCompanyId() != null) {
+        } else if (command.getCompanyId() != null) {
             existingData.setCompanyId(command.getCompanyId());
-        }
-        if (command.getDeliveryId() != null) {
+        } else if (command.getDeliveryId() != null) {
             existingData.setDeliveryId(command.getDeliveryId());
-        }
-        if (command.getOrderIdList() != null) {
+        } else if (command.getOrderIdList() != null) {
             List<UUID> orderIdList = existingData.getOrderIdList();
             orderIdList.addAll(command.getOrderIdList());
             existingData.setOrderIdList(orderIdList);
@@ -58,14 +53,11 @@ public class IdentityIntegrationService {
 
         if (command.getDomain().equals("COMPANY")) {
             existingData.setCompanyId(null);
-        }
-        if (command.getDomain().equals("HUB")) {
+        } else if (command.getDomain().equals("HUB")) {
             existingData.setHubId(null);
-        }
-        if (command.getDomain().equals("DELIVERY")) {
+        } else if (command.getDomain().equals("DELIVERY")) {
             existingData.setDeliveryId(null);
-        }
-        if (command.getDomain().equals("ORDER")) {
+        } else if (command.getDomain().equals("ORDER")) {
             List<UUID> orderIdList = existingData.getOrderIdList();
             orderIdList.removeAll(command.getOrderIdList());
             existingData.setOrderIdList(orderIdList);

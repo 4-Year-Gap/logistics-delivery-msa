@@ -7,6 +7,8 @@ import java.util.UUID;
 @Getter
 public class IdentityIntegrationDto {
 
+    private String domain;
+    private String eventType;
     private UUID userId;
     private UUID hubId;
     private UUID companyId;

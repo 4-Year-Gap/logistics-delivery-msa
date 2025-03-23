@@ -19,8 +19,10 @@ public class KafkaController {
         // DTO -> JSON 변환
         String jsonMessage = objectMapper.writeValueAsString(request);
 
+        String key = request.getDomain() + ":" + request.getEventType();
+
         // Kafka 전송
-        kafkaTemplate.send(topic, "COMPANY:CREATE", jsonMessage);
+        kafkaTemplate.send(topic, key, jsonMessage);
 
         return "Message sent to Kafka topic";
     }

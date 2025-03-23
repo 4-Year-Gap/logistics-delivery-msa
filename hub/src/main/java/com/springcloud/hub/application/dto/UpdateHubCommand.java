@@ -10,14 +10,16 @@ public record UpdateHubCommand(UUID id,
                                String name,
                                String address,
                                BigDecimal latitude,
-                               BigDecimal longitude) {
+                               BigDecimal longitude,
+                               UUID userId) {
     public static UpdateHubCommand fromUpdateHubRequest(UpdateHubRequest updateHubRequest){
         return new UpdateHubCommand(
                 updateHubRequest.id(),
                 updateHubRequest.name(),
                 updateHubRequest.address(),
                 updateHubRequest.latitude(),
-                updateHubRequest.longitude()
+                updateHubRequest.longitude(),
+                updateHubRequest.userId()
         );
     }
 
@@ -28,6 +30,7 @@ public record UpdateHubCommand(UUID id,
                 .address(address)
                 .latitude(latitude)
                 .longitude(longitude)
+                .userId(userId)
                 .build();
     }
 }

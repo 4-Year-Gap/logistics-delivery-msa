@@ -1,4 +1,4 @@
-package com.springcloud.hub.interfaces;
+package com.springcloud.hub.interfaces.external;
 
 import com.springcloud.hub.infrastructure.external.OrderServiceClient;
 import com.springcloud.hub.interfaces.exception.ResponseDto;

@@ -1,10 +1,8 @@
 package com.springcloud.company.company.service;
 
-import com.springcloud.company.company.dto.CompanyRequestDto;
-import com.springcloud.company.company.dto.CompanyResponseDto;
-import com.springcloud.company.company.dto.OrderProductResponseDto;
-import com.springcloud.company.company.dto.UpdateCompanyRequestDto;
+import com.springcloud.company.company.dto.*;
 import com.springcloud.company.company.entity.Company;
+import com.springcloud.company.company.infrastructure.external.IdentityIntegrationEventPublisher;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
 import com.springcloud.company.product.repository.ProductRepository;
@@ -19,8 +17,9 @@ import java.util.*;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final ProductRepository productRepository;
 
+    private final IdentityIntegrationEventPublisher eventPublisher;
+  
     public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
         Company company = Company.create(
                 RequestDto.getCompanyName(),
@@ -29,7 +28,14 @@ public class CompanyService {
                 RequestDto.getAddress(),
                 userId
         );
-        companyRepository.save(company);
+        Company insertCompany = companyRepository.save(company);
+
+        //kafka 이벤트 큐 보내기
+        if(insertCompany.getUserId() != null && insertCompany.getId() != null){
+            CreateIdentityIntegrationCommand integrationCommand = CreateIdentityIntegrationCommand.fromEntity(insertCompany);
+            eventPublisher.publish(integrationCommand);
+        }
+
         return new CompanyResponseDto(company);
     }
 
@@ -67,6 +73,12 @@ public class CompanyService {
         //업체 엔티티 수정
         company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress(), userId);
 
+        //kafka 이벤트 큐 보내기
+        if(company.getUserId() != null && company.getId() != null){
+            UpdateIdentityIntegrationCommand integrationCommand = UpdateIdentityIntegrationCommand.fromEntity(company);
+            eventPublisher.publish(integrationCommand);
+        }
+
         return new CompanyResponseDto(company);
     }
 
@@ -94,6 +106,12 @@ public class CompanyService {
             throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
         company.deletedCompany(userId);
+
+        //kafka 이벤트 큐 보내기
+        if(company.getUserId() != null && company.getId() != null){
+            DeleteIdentityIntegrationCommand integrationCommand = DeleteIdentityIntegrationCommand.fromEntity(company);
+            eventPublisher.publish(integrationCommand);
+        }
     }
 
     //상품 ID로 업체 조회

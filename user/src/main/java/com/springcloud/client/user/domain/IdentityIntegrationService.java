@@ -16,33 +16,34 @@ public class IdentityIntegrationService {
     public void manageIdentity(IdentityIntegrationCommand command) {
         String fieldKey = command.getUserId().toString();
 
-        if (command.getEventType().equals("CREATE")) {
-            createIdentity(command, fieldKey);
-        } else if (command.getEventType().equals("UPDATE")) {
-            updateIdentity(command, fieldKey);
-        } else if (command.getEventType().equals("DELETE")) {
-            deleteIdentity(command, fieldKey);
+        MessageEventType eventType = MessageEventType.valueOf(command.getEventType());
+
+        switch (eventType) {
+            case CREATE -> createIdentity(command, fieldKey);
+            case UPDATE -> updateIdentity(command, fieldKey);
+            case DELETE -> deleteIdentity(command, fieldKey);
         }
     }
 
     private void createIdentity(IdentityIntegrationCommand command, String fieldKey) {
-        IdentityIntegrationCacheData identityIntegrationCacheData = command.toCacheData();
-        redisTemplate.opsForHash().put(HASH_TABLE_KEY, fieldKey, identityIntegrationCacheData);
+        IdentityIntegrationCacheData newData = command.toCacheData();
+        redisTemplate.opsForHash().put(HASH_TABLE_KEY, fieldKey, newData);
     }
 
     private void updateIdentity(IdentityIntegrationCommand command, String fieldKey) {
         IdentityIntegrationCacheData existingData = (IdentityIntegrationCacheData) redisTemplate.opsForHash().get(HASH_TABLE_KEY, fieldKey);
 
-        if (command.getHubId() != null) {
-            existingData.setHubId(command.getHubId());
-        } else if (command.getCompanyId() != null) {
-            existingData.setCompanyId(command.getCompanyId());
-        } else if (command.getDeliveryId() != null) {
-            existingData.setDeliveryId(command.getDeliveryId());
-        } else if (command.getOrderIdList() != null) {
-            List<UUID> orderIdList = existingData.getOrderIdList();
-            orderIdList.addAll(command.getOrderIdList());
-            existingData.setOrderIdList(orderIdList);
+        MessageDomain domain = MessageDomain.valueOf(command.getDomain());
+
+        switch (domain) {
+            case COMPANY -> existingData.setCompanyId(command.getCompanyId());
+            case HUB -> existingData.setHubId(command.getHubId());
+            case DELIVERY -> existingData.setDeliveryId(command.getDeliveryId());
+            case ORDER -> {
+                List<UUID> orderIdList = existingData.getOrderIdList();
+                orderIdList.addAll(command.getOrderIdList());
+                existingData.setOrderIdList(orderIdList);
+            }
         }
 
         redisTemplate.opsForHash().put(HASH_TABLE_KEY, fieldKey, existingData);
@@ -51,16 +52,17 @@ public class IdentityIntegrationService {
     private void deleteIdentity(IdentityIntegrationCommand command, String fieldKey) {
         IdentityIntegrationCacheData existingData = (IdentityIntegrationCacheData) redisTemplate.opsForHash().get(HASH_TABLE_KEY, fieldKey);
 
-        if (command.getDomain().equals("COMPANY")) {
-            existingData.setCompanyId(null);
-        } else if (command.getDomain().equals("HUB")) {
-            existingData.setHubId(null);
-        } else if (command.getDomain().equals("DELIVERY")) {
-            existingData.setDeliveryId(null);
-        } else if (command.getDomain().equals("ORDER")) {
-            List<UUID> orderIdList = existingData.getOrderIdList();
-            orderIdList.removeAll(command.getOrderIdList());
-            existingData.setOrderIdList(orderIdList);
+        MessageDomain domain = MessageDomain.valueOf(command.getDomain());
+
+        switch (domain) {
+            case COMPANY -> existingData.setCompanyId(null);
+            case HUB -> existingData.setHubId(null);
+            case DELIVERY -> existingData.setDeliveryId(null);
+            case ORDER -> {
+                List<UUID> orderIdList = existingData.getOrderIdList();
+                orderIdList.removeAll(command.getOrderIdList());
+                existingData.setOrderIdList(orderIdList);
+            }
         }
 
         redisTemplate.opsForHash().put(HASH_TABLE_KEY, fieldKey, existingData);

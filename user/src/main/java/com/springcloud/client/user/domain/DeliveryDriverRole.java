@@ -1,5 +1,8 @@
 package com.springcloud.client.user.domain;
 
+import lombok.Getter;
+
+@Getter
 public enum DeliveryDriverRole {
 
     HUB(DeliveryDriverRole.Authority.HUB),

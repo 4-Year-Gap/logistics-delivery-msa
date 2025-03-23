@@ -72,7 +72,7 @@ public class ProductController {
     @PostMapping("/stock/test")
     public ResponseEntity<String> updateStock(@RequestBody OrderCreateEvent orderCreateEvent) {
         try {
-            productService.updateStockTest(orderCreateEvent);
+            productService.updateStockRedisWithLua(orderCreateEvent);
             return ResponseEntity.ok("Stock updated successfully");
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();

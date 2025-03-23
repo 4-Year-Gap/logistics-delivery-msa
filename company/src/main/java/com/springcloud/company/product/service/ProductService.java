@@ -67,13 +67,6 @@ public class ProductService {
         product.updateQuantity(orderCreateEvent.getProductQuantity());
     }
 
-    //상품 수정_주문 -> 재고 차감 로직 메서드
-    @Transactional
-    public void updateStockTest(OrderCreateEvent orderCreateEvent) {
-        System.out.println("test");
-    }
-
-
     /**
      * 초기화 메서드: 애플리케이션 시작 시 모든 상품의 재고를 Redis에 캐싱
      */
@@ -92,39 +85,69 @@ public class ProductService {
      */
     @Transactional
     public void updateStockRedisWithLua(OrderCreateEvent orderCreateEvent) {
-        UUID productId = orderCreateEvent.getProductId();
-        String stockKey = STOCK_KEY_PREFIX + productId;
-        int quantity = orderCreateEvent.getProductQuantity();
+        try {
+            UUID productId = orderCreateEvent.getProductId();
+            String stockKey = STOCK_KEY_PREFIX + productId;
+            int quantity = orderCreateEvent.getProductQuantity();
 
-        // Lua 스크립트 정의
-        String script =
-                "local current = redis.call('get', KEYS[1]) " +
-                        "if current == false then " +
-                        "   return nil " +  // 키가 존재하지 않는 경우
-                        "end " +
-                        "local newStock = tonumber(current) + tonumber(ARGV[1]) " +
-                        "if tonumber(ARGV[1]) < 0 and newStock < 0 then " +
-                        "   return false " +  // 재고 부족
-                        "end " +
-                        "redis.call('set', KEYS[1], tostring(newStock)) " + // 값 저장 시 tostring 사용
-                        "return tonumber(newStock)";
+            // Lua 스크립트 정의
+            String script =
+                    "local current = redis.call('get', KEYS[1]) " +
+                            "if current == false then " +
+                            "   return nil " +  // 키가 존재하지 않는 경우
+                            "end " +
+                            "local newStock = tonumber(current) + tonumber(ARGV[1]) " +
+                            "if tonumber(ARGV[1]) < 0 and newStock < 0 then " +
+                            "   return false " +  // 재고 부족
+                            "end " +
+                            "redis.call('set', KEYS[1], tostring(newStock)) " + // 값 저장 시 tostring 사용
+                            "return tonumber(newStock)";
 
-        // 스크립트 실행
-        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
-        Long result = redisTemplate.execute(
-                redisScript,
-                Collections.singletonList(stockKey),
-                String.valueOf(quantity)
-        );
+            // 스크립트 실행
+            DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+            Long result = redisTemplate.execute(
+                    redisScript,
+                    Collections.singletonList(stockKey),
+                    String.valueOf(quantity)
+            );
 
-        if (result == null) {
-            throw new RuntimeException("Product not found in stock.");
+            log.info(String.valueOf(result));
+
+            // 결과 처리
+            if (result == null) {
+                // Redis에 키가 없는 경우, DB에서 데이터를 가져와 캐싱
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new NoSuchElementException("Product not found"));
+
+                int currentStock = product.getStock();
+                int newStock = currentStock + quantity;
+
+                // 재고 유효성 검사
+                if (quantity < 0 && newStock < 0) {
+                    throw new IllegalArgumentException("재고 부족: 현재 " + currentStock + ", 요청 " + Math.abs(quantity));
+                }
+
+                // Redis에 설정
+                redisTemplate.opsForValue().set(stockKey, String.valueOf(newStock));  // newStock을 String으로 변환하여 저장
+
+                // 선택적으로 DB 업데이트
+                // updateDatabaseStock(productId, newStock);
+            } else if (result.equals(Boolean.FALSE)) {
+                // 재고 부족 상황
+                String currentStockStr = redisTemplate.opsForValue().get(stockKey);
+                int currentStock = Integer.parseInt(currentStockStr);
+                throw new IllegalArgumentException("재고 부족: 현재 " + currentStock + ", 요청 " + Math.abs(quantity));
+            } else {
+                // 성공적으로 업데이트됨, 필요하다면 DB 동기화
+                int newStock = ((Number) result).intValue();
+                // 선택적으로 DB 업데이트
+                // updateDatabaseStock(productId, newStock);
+            }
+        } catch (Exception e) {
+            // 예외 처리 및 롤백
+            log.error("예외 발생: {}", e.getMessage());
+            throw e;  // 트랜잭션 롤백을 유발
         }
-        if (result == -1) {
-            throw new RuntimeException("Insufficient stock.");
-        }
-
-        log.info("Updated stock: " + result);
     }
 
 

@@ -12,26 +12,32 @@ public class DeliveryDriverDto {
     @Getter
     public static class DeliveryDriverRequest {
         private UUID userId;
+        private UUID hubId;
 
         public DeliveryCommand toCommand() {
             return DeliveryCommand.builder()
                     .userId(this.userId)
+                    .hubId(this.hubId)
                     .build();
         }
     }
 
     @Getter
     public static class DeliveryDriverResponse {
+        private final UUID userId;
         private final UUID deliveryDriverId;
         private final String username;
         private final String slackId;
         private final DeliveryDriverRole role;
+        private final UUID hubId;
 
         public DeliveryDriverResponse(DeliveryInfo info) {
+            this.userId = info.getUserId();
             this.deliveryDriverId = info.getDeliveryDriverId();
             this.username = info.getUsername();
             this.slackId = info.getSlackId();
             this.role = info.getRole();
+            this.hubId = info.getHubId();
         }
     }
 }

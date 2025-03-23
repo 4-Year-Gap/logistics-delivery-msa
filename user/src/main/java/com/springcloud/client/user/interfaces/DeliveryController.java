@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -29,10 +31,26 @@ public class DeliveryController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/hub-delivery-driver")
-    public ResponseEntity<Void> deleteHubDeliveryDriver(@RequestBody DeliveryDriverDto.DeliveryDriverRequest request) {
+
+    @PostMapping("/company-delivery-driver")
+    public ResponseEntity<DeliveryDriverDto.DeliveryDriverResponse> addCompanyDeliveryDriver(@RequestBody DeliveryDriverDto.DeliveryDriverRequest request) {
         DeliveryCommand command = request.toCommand();
-        deliveryFacade.deleteHubDeliveryDriver(command);
+        DeliveryInfo info = deliveryFacade.addCompanyDeliveryDriver(command);
+        DeliveryDriverDto.DeliveryDriverResponse response = new DeliveryDriverDto.DeliveryDriverResponse(info);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/company-delivery-driver/{hubId}")
+    public ResponseEntity<DeliveryDriverDto.DeliveryDriverResponse> getCompanyDeliveryDriver(@PathVariable UUID hubId) {
+        DeliveryInfo info = deliveryFacade.getCompanyDeliveryDriver(hubId);
+        DeliveryDriverDto.DeliveryDriverResponse response = new DeliveryDriverDto.DeliveryDriverResponse(info);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/delivery-driver/delete")
+    public ResponseEntity<Void> deleteDeliveryDriver(@RequestBody DeliveryDriverDto.DeliveryDriverRequest request) {
+        DeliveryCommand command = request.toCommand();
+        deliveryFacade.deleteDeliveryDriver(command);
         return ResponseEntity.noContent().build();
     }
 }

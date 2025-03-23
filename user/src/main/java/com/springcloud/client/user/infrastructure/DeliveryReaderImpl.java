@@ -29,12 +29,17 @@ public class DeliveryReaderImpl implements DeliveryReader {
     }
 
     @Override
-    public DeliveryAssignment findWithLock(int pk) {
-        return deliveryAssignmentRepository.findWithLock(pk);
+    public DeliveryAssignment findWithLock(DeliveryDriverRole driverType) {
+        return deliveryAssignmentRepository.findWithLock(driverType);
     }
 
     @Override
     public Optional<DeliveryDriver> findById(UUID userId) {
         return deliveryRepository.findById(userId);
+    }
+
+    @Override
+    public List<DeliveryDriver> findAllByHubIdAndRoleOrderByDeliveryOrderNumberAsc(UUID hubId, DeliveryDriverRole role) {
+        return deliveryRepository.findAllByHubIdAndRoleOrderByDeliveryOrderNumberAsc(hubId, role);
     }
 }

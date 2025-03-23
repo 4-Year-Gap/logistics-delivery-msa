@@ -38,9 +38,10 @@ public class ProductController {
 
     @Description("상품 전체 조회")
     @GetMapping
-    public List<ProductResponseDto> getAllProducts() {
-        return productService.getAllProducts();
+    public List<ProductResponseDto> getAllProducts(@RequestParam(required = false) String keyword) {
+        return productService.getAllProducts(keyword);
     }
+
 
     @Description("상품 상세 조회")
     @GetMapping("/{productId}")
@@ -51,10 +52,11 @@ public class ProductController {
     @Description("등록 상품 전체 조회")
     @GetMapping("/me")
     public List<ProductResponseDto> getProducts(
+            @RequestParam(required = false) String keyword
             //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
     ) {
         UUID userId = UUID.fromString("77daaade-593b-4284-8416-b82570e1ce4f");
-        return productService.getProducts(userId);
+        return productService.getProducts(userId,keyword);
     }
 
     @Description("등록 상품 삭제")

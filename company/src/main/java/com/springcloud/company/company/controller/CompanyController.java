@@ -39,8 +39,10 @@ public class CompanyController {
 
     @Description("업체 조회")
     @GetMapping("/all")
-    private List<CompanyResponseDto> getAllCompanies() {
-        return companyService.getAllCompany();
+    private List<CompanyResponseDto> getAllCompanies(
+            @RequestParam(required = false) String keyword
+    ) {
+        return companyService.getAllCompany(keyword);
     }
 
     @Description("업체 단일 조회")

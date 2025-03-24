@@ -48,7 +48,7 @@ public class DeliveryService {
         return deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 배송 정보를 찾을 수 없습니다."));
     }
-    
+
     @Transactional
     public void confirmDelivery(OrderCreateEvent orderCreateEvent) {
 
@@ -78,8 +78,7 @@ public class DeliveryService {
                 .orderId(orderCreateEvent.getOrderId())
                 .build();
 
-//        updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
-        ;
+        updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
     }
 
     @Transactional
@@ -226,5 +225,4 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByOrderId(value.getOrderId());
         delivery.setStatus(DeliveryStatusEnum.valueOf(value.getStatus()));
     }
-
 }

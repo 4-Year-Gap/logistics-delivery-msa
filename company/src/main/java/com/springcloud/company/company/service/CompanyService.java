@@ -88,11 +88,11 @@ public class CompanyService {
 
     // 공통 로직 분리 (업체 생성 + Kafka 이벤트 발행)
     private CompanyResponseDto createCompanyAndPublishEvent(CompanyRequestDto requestDto, UUID userId) {
-        // 존재하는 허브인지 확인
-        Integer hub = verifiedHubInfo(requestDto.getHubId());
-        if (hub != 1) {
-            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
-        }
+//        // 존재하는 허브인지 확인
+//        Integer hub = verifiedHubInfo(requestDto.getHubId());
+//        if (hub != 1) {
+//            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
+//        }
 
         // 업체 생성
         Company company = Company.create(
@@ -155,11 +155,11 @@ public class CompanyService {
             verifyCompanyAccess(userId, companyId);
         }
 
-        // 존재하는 허브인지 확인_변경할 허브가 존재하는지 확인하기
-        Integer hub = verifiedHubInfo(requestDto.getHubId());
-        if (hub != 1) {
-            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
-        }
+//        // 존재하는 허브인지 확인_변경할 허브가 존재하는지 확인하기
+//        Integer hub = verifiedHubInfo(requestDto.getHubId());
+//        if (hub != 1) {
+//            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
+//        }
 
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
 

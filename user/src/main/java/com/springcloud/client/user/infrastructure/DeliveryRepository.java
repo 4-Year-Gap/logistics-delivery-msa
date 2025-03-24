@@ -17,4 +17,6 @@ public interface DeliveryRepository extends JpaRepository<DeliveryDriver, UUID> 
 
     // Role이 HUB인 배송 기사들을 deliveryOrderNumber 순으로 조회
     List<DeliveryDriver> findAllByRoleOrderByDeliveryOrderNumberAsc(DeliveryDriverRole role);
+
+    List<DeliveryDriver> findAllByHubIdAndRoleOrderByDeliveryOrderNumberAsc(UUID hubId, DeliveryDriverRole role);
 }

@@ -34,4 +34,8 @@ public class Hub extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 7)
     @Comment("경도")
     private BigDecimal longitude;
+
+    @Column(name = "user_id")
+    @Comment("허브 담당자 ID")
+    private UUID userId;
 }

@@ -6,6 +6,8 @@ import com.springcloud.client.user.domain.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class DeliveryFacade {
@@ -20,7 +22,15 @@ public class DeliveryFacade {
         return deliveryService.getHubDeliveryDriver();
     }
 
-    public void deleteHubDeliveryDriver(DeliveryCommand command) {
-        deliveryService.deleteHubDeliveryDriver(command);
+    public DeliveryInfo addCompanyDeliveryDriver(DeliveryCommand command) {
+        return deliveryService.addCompanyDeliveryDriver(command);
+    }
+
+    public DeliveryInfo getCompanyDeliveryDriver(UUID hubId) {
+        return deliveryService.getCompanyDeliveryDriver(hubId);
+    }
+
+    public void deleteDeliveryDriver(DeliveryCommand command) {
+        deliveryService.deleteDeliveryDriver(command);
     }
 }

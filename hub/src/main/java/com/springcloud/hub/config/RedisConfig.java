@@ -1,6 +1,7 @@
 package com.springcloud.hub.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springcloud.hub.application.dto.GetHubRouteQuery;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.util.List;
@@ -39,12 +41,15 @@ public class RedisConfig {
     public RedisTemplate<String, List<GetHubRouteQuery>> hubRouteTemplate() {
         RedisTemplate<String, List<GetHubRouteQuery>> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
-        template.setKeySerializer(RedisSerializer.string());
-        template.setValueSerializer(RedisSerializer.json());
 
-//        template.setKeySerializer(RedisSerializer.string());  // hubRouteCache (key)
-//        template.setHashKeySerializer(RedisSerializer.string());  // 개별 필드 (hash field)
-//        template.setHashValueSerializer(RedisSerializer.json());  // List<GetHubRouteQuery> 직렬화
+        template.setKeySerializer(RedisSerializer.string());
+        template.setHashKeySerializer(RedisSerializer.string());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Jackson2JsonRedisSerializer<List<GetHubRouteQuery>> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper.getTypeFactory().constructCollectionType(List.class, GetHubRouteQuery.class));
+
+        template.setHashValueSerializer(serializer);
 
         return template;
     }

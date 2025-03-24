@@ -1,4 +1,4 @@
-package com.springcloud.hub.interfaces;
+package com.springcloud.hub.interfaces.external;
 
 import com.springcloud.hub.application.dto.*;
 import com.springcloud.hub.application.service.HubRouteFacade;

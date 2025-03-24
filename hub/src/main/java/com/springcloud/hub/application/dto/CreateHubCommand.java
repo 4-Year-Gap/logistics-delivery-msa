@@ -9,13 +9,16 @@ import java.util.UUID;
 public record CreateHubCommand(String name,
                                String address,
                                BigDecimal latitude,
-                               BigDecimal longitude) {
+                               BigDecimal longitude,
+                               UUID userId) {
     public static CreateHubCommand fromCreateHubRequest(CreateHubRequest createHubRequest){
         return new CreateHubCommand(
                 createHubRequest.name(),
                 createHubRequest.address(),
                 createHubRequest.latitude(),
-                createHubRequest.longitude()
+                createHubRequest.longitude(),
+                createHubRequest.userId()
+
         );
     }
 
@@ -26,6 +29,7 @@ public record CreateHubCommand(String name,
                 .address(address)
                 .latitude(latitude)
                 .longitude(longitude)
+                .userId(userId)
                 .build();
     }
 }

@@ -10,9 +10,9 @@ import java.util.UUID;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, UUID> {
-    Optional<Company> findByUserId(UUID userId);
 
     @EntityGraph(attributePaths = {"products"})
     Optional<Company> findByProducts_Id(UUID productId);
 
+    Optional<Company> findByUserId(UUID userId);
 }

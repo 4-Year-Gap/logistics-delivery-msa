@@ -1,15 +1,16 @@
 package com.springcloud.company.company.service;
 
-import com.springcloud.company.company.dto.CompanyRequestDto;
-import com.springcloud.company.company.dto.CompanyResponseDto;
-import com.springcloud.company.company.dto.OrderProductResponseDto;
+import com.springcloud.company.company.dto.*;
 import com.springcloud.company.company.entity.Company;
+import com.springcloud.company.company.infrastructure.external.IdentityIntegrationEventPublisher;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
+import com.springcloud.company.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,8 @@ public class CompanyService {
 
     private final CompanyRepository companyRepository;
 
+    private final IdentityIntegrationEventPublisher eventPublisher;
+  
     public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
         Company company = Company.create(
                 RequestDto.getCompanyName(),
@@ -25,7 +28,14 @@ public class CompanyService {
                 RequestDto.getAddress(),
                 userId
         );
-        companyRepository.save(company);
+        Company insertCompany = companyRepository.save(company);
+
+        //kafka 이벤트 큐 보내기
+        if(insertCompany.getUserId() != null && insertCompany.getId() != null){
+            CreateIdentityIntegrationCommand integrationCommand = CreateIdentityIntegrationCommand.fromEntity(insertCompany);
+            eventPublisher.publish(integrationCommand);
+        }
+
         return new CompanyResponseDto(company);
     }
 
@@ -51,8 +61,67 @@ public class CompanyService {
         return new OrderProductResponseDto(supplierCompany.getHubId(), product.getId(), receivingCompany.getHubId());
     }
 
+    @Transactional
+    // 업체 정보 수정
+    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId) {
+        Company company = companyRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
+
+        // 업체의 userId와 JWT userID 일치하는지 확인
+        if (!company.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
+        //업체 엔티티 수정
+        company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress(), userId);
+
+        //kafka 이벤트 큐 보내기
+        if(company.getUserId() != null && company.getId() != null){
+            UpdateIdentityIntegrationCommand integrationCommand = UpdateIdentityIntegrationCommand.fromEntity(company);
+            eventPublisher.publish(integrationCommand);
+        }
+
+        return new CompanyResponseDto(company);
+    }
+
+    // 업체 전체 조회
+    public List<CompanyResponseDto> getAllCompany() {
+        List<Company> companyList = companyRepository.findAll();
+        return companyList.stream()
+                .map(CompanyResponseDto::new)
+                .toList();
+    }
+
+    //업체 단일 조회
+    public CompanyResponseDto getCompany(UUID companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 업체가 존재하지 않습니다."));
+        return new CompanyResponseDto(company);
+    }
+
+    // 업체 삭제
+    @Transactional
+    public void deleteCompany(UUID companyId, UUID userId) {
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("company not found"));
+        // 업체의 userId와 JWT userID 일치하는지 확인
+        if (!company.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+        }
+        company.deletedCompany(userId);
+
+        //kafka 이벤트 큐 보내기
+        if(company.getUserId() != null && company.getId() != null){
+            DeleteIdentityIntegrationCommand integrationCommand = DeleteIdentityIntegrationCommand.fromEntity(company);
+            eventPublisher.publish(integrationCommand);
+        }
+    }
+
     //상품 ID로 업체 조회
     public Company getCompanyByProductId(UUID productId){
         return companyRepository.findByProducts_Id(productId).orElseThrow();
+    }
+
+    public void deleteProduct(UUID productId) {
+        Company company = getCompanyByProductId(productId);
+        company.removeProductByProductId(productId);
+        companyRepository.save(company);
     }
 }

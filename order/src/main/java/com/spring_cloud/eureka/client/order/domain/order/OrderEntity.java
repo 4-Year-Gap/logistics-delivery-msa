@@ -26,7 +26,7 @@ public class OrderEntity extends BaseEntity {
 
     @Column(nullable = false)
     @Comment("주문한 사람")
-    private String orderedBy;
+    private UUID orderedBy;
 
     @Column(nullable = false)
     @Comment("배송 받는 회사 ID")
@@ -41,7 +41,7 @@ public class OrderEntity extends BaseEntity {
     private UUID productId;
 
     @Column(nullable = false)
-    @Comment("제품 ID")
+    @Comment("제품 수량")
     private Integer quantity;
 
     @Column(nullable = false)
@@ -49,15 +49,17 @@ public class OrderEntity extends BaseEntity {
     private Integer totalPrice;
 
     @Column(nullable = false)
-    @Comment("주문 요청 사함")
+    @Comment("주문 요청 사항")
     private String requestMessage;
 
     @Enumerated(EnumType.STRING)
     @Comment("배송 현재 상태")
     private OrderEntityStatus status;
 
+    private UUID companyDeliver;
 
-    public static OrderEntity create(String userName, UUID productId, Integer productPrice, UUID supplierId, UUID receivingCompanyId, Integer productQuantity, String requestMessage) {
+
+    public static OrderEntity create(UUID userName, UUID productId, Integer productPrice, UUID supplierId, UUID receivingCompanyId, Integer productQuantity, String requestMessage,UUID companyDeliver) {
         return OrderEntity.builder()
                 .orderedBy(userName)
                 .consumeCompanyId(receivingCompanyId)
@@ -67,6 +69,7 @@ public class OrderEntity extends BaseEntity {
                 .totalPrice(productPrice)
                 .requestMessage(requestMessage)
                 .status(OrderEntityStatus.IN_DELIVER)
+                .companyDeliver(companyDeliver)
                 .build();
     }
 }

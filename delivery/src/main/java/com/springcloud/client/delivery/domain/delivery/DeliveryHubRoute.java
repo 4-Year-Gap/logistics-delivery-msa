@@ -2,8 +2,15 @@ package com.springcloud.client.delivery.domain.delivery;
 
 
 import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
+
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.JoinColumn;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -25,10 +32,9 @@ public class DeliveryHubRoute {
     @Column(nullable = false, name = "route_id")
     private UUID routeId;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Delivery deliveryId;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_id", nullable = false)
+    private Delivery delivery;
     @Comment("배송 순번")
     private Integer deliverySequence;
     @Comment("시작 허브")
@@ -54,8 +60,9 @@ public class DeliveryHubRoute {
 
 
 
-    public static DeliveryHubRoute to(HubRoute hubRoute,UUID destinationHub){
+    public static DeliveryHubRoute to(HubRoute hubRoute,UUID destinationHub,Delivery delivery){
         return DeliveryHubRoute.builder()
+                .delivery(delivery)
                 .deliverySequence(hubRoute.getSequenceNumber())
                 .startHub(hubRoute.getHubId())
                 .destinationHub(destinationHub)
@@ -71,5 +78,9 @@ public class DeliveryHubRoute {
 
     public void changeStatus(DeliveryStatusEnum deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
+    }
+
+    public void updateDeliveryStatus(DeliveryStatusEnum deliveryStatusEnum) {
+        this.deliveryStatus = deliveryStatusEnum;
     }
 }

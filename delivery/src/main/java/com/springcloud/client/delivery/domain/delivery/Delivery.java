@@ -38,6 +38,9 @@ public class Delivery extends BaseEntity {
     @Comment("배송 마지막 허브")
     private UUID endHubId;
 
+    @Comment("주문 ID")
+    private UUID orderId;
+
     @Column(nullable = false)
     @Comment("배송지 주소")
     @Length(max = 100)
@@ -49,17 +52,23 @@ public class Delivery extends BaseEntity {
 
     @Column(nullable = false)
     @Comment("배송 받는 사람 ID")
-    private Integer receiverId;
+    private UUID receiverId;
 
-    @OneToMany(mappedBy = "deliveryId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("업체 배송 담당자")
+    @Column(nullable = true)
+    private UUID companyDeliver;
+
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryHubRoute> deliveryHubRouteList;
 
     public static Delivery create(String address,
                                   DeliveryStatusEnum deliveryStatusEnum,
-                                  UUID startHub, UUID endHub,
+                                  UUID startHub,
+                                  UUID endHub,
                                   String slackId,
-                                  List<DeliveryHubRoute> deliveryHubRouteList,
-                                  Integer receiverId
+                                  UUID receiverId,
+                                  UUID orderId,
+                                  UUID companyDeliver
     )
     {
         return Delivery.builder()
@@ -68,8 +77,9 @@ public class Delivery extends BaseEntity {
                 .startHubId(startHub)
                 .endHubId(endHub)
                 .receiverSlackId(slackId)
-                .deliveryHubRouteList(deliveryHubRouteList)
                 .receiverId(receiverId)
+                .orderId(orderId)
+                .companyDeliver(companyDeliver)
                 .build();
 
     }

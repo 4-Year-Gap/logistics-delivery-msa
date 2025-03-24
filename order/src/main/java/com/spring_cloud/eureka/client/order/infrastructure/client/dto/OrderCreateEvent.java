@@ -19,6 +19,7 @@ public class OrderCreateEvent implements Serializer {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
+
     private UUID orderId;
     private UUID startHub;
     private UUID endHub;
@@ -26,8 +27,9 @@ public class OrderCreateEvent implements Serializer {
     private Integer productQuantity;
     private String receiverSlackId;
     private String address;
-    private Integer userId;
-
+    private UUID receiverId;
+    private UUID userId;
+    private UUID companyDeliver;
 
     public static OrderCreateEvent create(UUID orderId,
                                           UUID startHub,
@@ -36,7 +38,9 @@ public class OrderCreateEvent implements Serializer {
                                           Integer productQuantity,
                                           String receiverSlackId,
                                           String address,
-                                          Integer userId
+                                          UUID receiverId,
+                                          UUID userId,
+                                          UUID companyDeliver
                                           ) {
         return new OrderCreateEvent(
                 orderId,
@@ -46,7 +50,9 @@ public class OrderCreateEvent implements Serializer {
                 productQuantity,
                 receiverSlackId,
                 address,
-                userId
+                receiverId,
+                userId,
+                companyDeliver
         );
     }
 

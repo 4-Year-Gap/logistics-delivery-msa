@@ -1,19 +1,22 @@
 package com.springcloud.client.delivery.infrastructure.repository;
 
 
-import com.querydsl.jpa.JPQLQuery;
+
+import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.springcloud.client.delivery.domain.delivery.Delivery;
 import com.springcloud.client.delivery.domain.delivery.QDelivery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.UUID;
 
-import static com.springcloud.client.delivery.domain.delivery.QDelivery.delivery;
 
+@Repository
 @RequiredArgsConstructor
 public class DeliveryRepositoryImpl implements CustomDeliveryRepository{
 
@@ -21,20 +24,37 @@ public class DeliveryRepositoryImpl implements CustomDeliveryRepository{
     private final JPAQueryFactory queryFactory;
 
 
+
     @Override
-    public Page<Delivery> search(Integer userId, String role, Pageable pageable) {
+    public Page<Delivery> search(UUID userId, String role, Pageable pageable,UUID hubId) {
+        QDelivery delivery = QDelivery.delivery;
 
-        List<Delivery> query = queryFactory.
-                select(delivery)
-                .from(delivery)
-                .fetch();
+        BooleanExpression whereClause = null;
 
-        //조건 추가
+        switch (role) {
+            case "MASTER":
+                break;
+            case "HUB_MANAGER":
+                // 허브 관리자는 담당 허브의 배송 정보만 조회
+                whereClause = delivery.endHubId.eq(hubId).or(delivery.startHubId.eq(hubId));
+                break;
+            case "DELIVERY_PERSON":
+                whereClause = delivery.companyDeliver.eq(userId);
+                break;
+            case "COMPANY_MANAGER":
+                whereClause = delivery.receiverId.eq(userId);
+                break;
+            default:
+                return Page.empty();
+        }
 
-        JPQLQuery<Delivery> count = queryFactory
+        QueryResults<Delivery> results = queryFactory
                 .selectFrom(delivery)
-                .from(delivery);
+                .where(whereClause)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
 
-        return  PageableExecutionUtils.getPage(query, pageable, count::fetchCount);
+        return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }

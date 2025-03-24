@@ -82,6 +82,17 @@ public class Company extends BaseEntity {
         delete(userId);
     }
 
+    // 상품 등록 메서드
+    public Product createProduct(String productName, Integer price, Integer stock, UUID userId) {
+        // 정적 팩토리 메서드 호출하여 Product 생성
+        Product product = Product.create(productName, price, stock, userId, this); // Company 객체를 참조
+
+        // 회사에 상품 추가
+        this.products.add(product);
+
+        return product;
+    }
+
     public void removeProductByProductId(UUID productId) {
         Product product = getProductById(productId);
         products.remove(product);

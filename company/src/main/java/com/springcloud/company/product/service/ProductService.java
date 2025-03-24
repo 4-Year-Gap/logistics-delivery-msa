@@ -1,5 +1,7 @@
 package com.springcloud.company.product.service;
 
+import com.springcloud.company.common.IdentityIntegrationResponse;
+import com.springcloud.company.common.UserRole;
 import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.company.service.CompanyService;
@@ -11,6 +13,8 @@ import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.repository.ProductRepository;
 import com.springcloud.company.product.repository.ProductRockRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,26 +28,73 @@ public class ProductService {
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
     private final ProductRockRepository productRockRepository;
+    private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
 
+    //유저 권한 확인 메서드 -> 래디스로 요청하여 userId에 해당하는 허브아이디, 배송아이디, 업체아이디 확인 가능하다.
+    private IdentityIntegrationResponse getIdentityIntegrationCache(UUID userId) {
+        HashOperations<String, String, IdentityIntegrationResponse> hashOps = redisTemplate.opsForHash();
 
+        IdentityIntegrationResponse identityIntegrationCache = hashOps.get("identityIntegrationCache", userId.toString());
+
+        if (null == identityIntegrationCache){
+            throw new IllegalArgumentException("레디스에 존재 하지 않음");
+        }
+
+        return identityIntegrationCache;
+    }
+
+    //상품 등록
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId) {
+    public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId, UserRole userRole) {
+        //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
         //유저 ID를 통해 업체 조회
-        Company company = companyRepository.findByUserId(userId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 유저의 업체를 찾을 수 없습니다."));
+        Company company = companyRepository.findById(requestDto.getCompanyId())
+                .orElseThrow(()-> new IllegalArgumentException("해당 업체를 찾을 수 없습니다."));
+
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+            verifyHubAccess(userId, company.getHubId());
+        }
+
+        // 업체의 업체 담당자인지 확인 - userId와 JWT userID 일치하는지 확인
+        if (userRole == UserRole.COMPANY_MANAGER) {
+            verifyCompanyAccess(userId, company.getId());
+        }
 
         //객체 생성
-        Product product = Product.create(
+        Product product = company.createProduct(
                 requestDto.getProductName(),
                 requestDto.getPrice(),
                 requestDto.getStock(),
-                userId,
-                company
+                userId
         );
-        productRepository.save(product);
+
         return new ProductResponseDto(product);
     }
 
+    // 허브 접근 권한 체크
+    private void verifyHubAccess(UUID userId, UUID hubId) {
+        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+        UUID managerHubId = identityIntegrationResponse.getHubId(); // 허브 관리자 권한의 허브 ID
+
+        if (!managerHubId.equals(hubId)) {
+            throw new IllegalArgumentException("해당 허브의 업체만 접근할 수 있습니다.");
+        }
+    }
+
+    // 업체 접근 권한 체크
+    private void verifyCompanyAccess(UUID userId, UUID companyId) {
+        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+        UUID managerCompanyId = identityIntegrationResponse.getCompanyId(); // 허브 관리자 권한의 허브 ID
+
+        if (!managerCompanyId.equals(companyId)) {
+            throw new IllegalArgumentException("해당 유저의 담당 업체만 접근할 수 있습니다.");
+        }
+    }
 
     //상품 수정_주문 -> 재고 차감 로직 메서드
     @Transactional

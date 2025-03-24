@@ -21,10 +21,14 @@ public class OrderCreateListener {
     @KafkaListener(groupId = "order_group",topics = "order-topic")
     public void createOrderEvent(ConsumerRecord<String, OrderCreateEvent> record){
 
+        log.info(record.value().getAddress());
+        log.info(record.value().getReceiverSlackId());
+
+
         deliveryService.confirmDelivery(record.value());
     }
 
-    @KafkaListener(groupId = "order_group",topics = "order-status-topic")
+    @KafkaListener(groupId = "test", topics = "order-status-topic")
     public void updateStatusOrderEvent(ConsumerRecord<String, OrderStatusEvent> record){
 
         deliveryService.updateDeliveryEvent(record.value());

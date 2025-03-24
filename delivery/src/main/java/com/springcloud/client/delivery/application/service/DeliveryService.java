@@ -66,12 +66,12 @@ public class DeliveryService {
             throw new IllegalArgumentException("배송자 정보를 받아오는데 실패하였습니다");
         }
 
-
-
-
         Delivery delivery = deliveryRepository.save(createDelivery(orderCreateEvent));
 
         createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse,delivery);
+
+
+        //
 
         IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
                 .userId(deliveryDriverClientResponse.getDeliveryDriverId())
@@ -83,7 +83,6 @@ public class DeliveryService {
 
     @Transactional
     protected Delivery createDelivery(OrderCreateEvent orderCreateEvent) {
-
 
         return Delivery.create(
                 orderCreateEvent.getAddress(),

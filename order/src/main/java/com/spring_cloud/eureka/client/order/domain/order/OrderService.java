@@ -34,8 +34,8 @@ public class OrderService {
     private final ProductClient productClient;
     private final DeliveryClient deliveryClient;
     private final KafkaTemplate<String, OrderCreateEvent> createKafkaTemplate;
-    private final KafkaTemplate<String, ProductUpdateEvent> productUpdateEventKafkaTemplate;
-    private final KafkaTemplate<String, IdentityIntegrationCommand> updateKafkaTemplate;
+    private final KafkaTemplate<String, OrderCreateEvent> productUpdateEventKafkaTemplate;
+    private final KafkaTemplate<String, IdentityIntegrationCommand> userUpdateKafkaTemplate;
     private final KafkaTemplate<String, OrderStatusEvent> orderStausEventKafkaTemplate;
     private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
 
@@ -59,22 +59,14 @@ public class OrderService {
     @Transactional
     public OrderEntity createOrder(OrderCreateCommand command) {
 
-
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
-//        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
+        ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
 
 
-        ProductClientResponse productClientResponse = new ProductClientResponse();
-        productClientResponse.setEndHub(UUID.fromString("86c9cc97-0270-11f0-87a5-0242ac130003"));
-        productClientResponse.setStartHub(UUID.fromString("86d4917f-0270-11f0-87a5-0242ac130003"));
-        productClientResponse.setProductId(command.getProductId());
 
 
-        //나중에 삭제
         UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
-        userInfoClientResponse.setUserId(UUID.randomUUID());
-        userInfoClientResponse.setSlackId("test_user_slackId");
-        userInfoClientResponse.setUserName("testUser");
+
 
         OrderEntity orderEntity = orderRepository.save(orderCreate(userInfoClientResponse, command));
 
@@ -88,9 +80,23 @@ public class OrderService {
                 .userId(command.getUserId())
                 .build();
 
+
+
+
+
         createKafkaTemplate.send(ORDER_CREATE_TOPIC, CREATE_KEY_PREFIX + orderCreateEvent.getOrderId(), orderCreateEvent);
-        productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, productUpdateEvent);
-        updateKafkaTemplate.send(INTEGRATED_USER_TOPIC,INTEGRATED_KEY, identityIntegrationDTO);
+//        productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, orderCreateEvent);
+
+
+
+
+
+
+        userUpdateKafkaTemplate.send(INTEGRATED_USER_TOPIC,INTEGRATED_KEY, identityIntegrationDTO);
+
+
+
+
 
         return orderEntity;
     }
@@ -136,13 +142,13 @@ public class OrderService {
         OrderReadCommand readCommand = new OrderReadCommand(command.getOrderId(),command.getUserId(),command.getUserRole());
         OrderEntity orderEntity = getOneOrderInformationById(readCommand);
 
-
-        if (command.getOrderEntityStatus().equals(OrderEntityStatus.CANCELED)){
-            ProductUpdateEvent productUpdateEvent = createProductEvent(orderEntity.getProductId(),orderEntity.getQuantity() * -1);
-            productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, productUpdateEvent);
-            OrderStatusEvent orderStatusEvent = createOrderStatusEvent(orderEntity.getOrderId(),command.getOrderEntityStatus());
-            orderStausEventKafkaTemplate.send(ORDER_STATUS_TOPIC,orderStatusEvent);
-        }
+//
+//        if (command.getOrderEntityStatus().equals(OrderEntityStatus.CANCELED)){
+//            ProductUpdateEvent productUpdateEvent = createProductEvent(orderEntity.getProductId(),orderEntity.getQuantity() * -1);
+//            productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, productUpdateEvent);
+//            OrderStatusEvent orderStatusEvent = createOrderStatusEvent(orderEntity.getOrderId(),command.getOrderEntityStatus());
+//            orderStausEventKafkaTemplate.send(ORDER_STATUS_TOPIC,orderStatusEvent);
+//        }
 
 
 
@@ -175,12 +181,23 @@ public class OrderService {
         };
     }
 
+//    private OrderEntity getOrderForCompanyManager(OrderReadCommand command) {
+//        IdentityIntegrationResponse integrationResponse = getIdentityIntegrationCache(command.getUserId());
+//        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
+//                command.getOrderId(),
+//                integrationResponse.getCompanyId(),
+//                integrationResponse.getCompanyId()
+//        );
+//    }
+
     private OrderEntity getOrderForCompanyManager(OrderReadCommand command) {
-        IdentityIntegrationResponse integrationResponse = getIdentityIntegrationCache(command.getUserId());
+        UUID companyId = productClient.getCompanyId(command.getUserId());
+
+
         return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
                 command.getOrderId(),
-                integrationResponse.getCompanyId(),
-                integrationResponse.getCompanyId()
+                companyId,
+                companyId
         );
     }
 

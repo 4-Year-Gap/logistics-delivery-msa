@@ -1,12 +1,16 @@
 package com.spring_cloud.eureka.client.order.infrastructure.client.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.UUID;
 
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductUpdateEvent implements Serializer {
 
     private static ObjectMapper objectMapper = new ObjectMapper();

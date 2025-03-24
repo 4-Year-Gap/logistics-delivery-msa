@@ -53,11 +53,11 @@ public class Company extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
 
-    public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID userId) {
+    public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID companyUserId, UUID userId) {
         Company company = new Company();
         company.companyName = companyName;
         company.hubId = hubId;
-        company.userId = userId;
+        company.userId = companyUserId;
         company.companyType = companyType;
         company.address = address;
         company.createdBy = String.valueOf(userId);

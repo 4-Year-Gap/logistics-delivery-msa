@@ -50,25 +50,31 @@ public class CompanyService {
         return identityIntegrationCache;
     }
 
+    // 허브 접근 권한 체크
+    private void verifyHubAccess(UUID userId, UUID hubId) {
+        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+        UUID managerHubId = identityIntegrationResponse.getHubId(); // 허브 관리자 권한의 허브 ID
+
+        if (!managerHubId.equals(hubId)) {
+            throw new IllegalArgumentException("해당 허브의 업체만 생성할 수 있습니다.");
+        }
+    }
+
     // 업체 등록 기능
     public CompanyResponseDto createCompany(CompanyRequestDto requestDto, UUID userId, UserRole userRole) {
-
         // MASTER 또는 HUB_MANAGER만 업체 생성 가능
         if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+            verifyHubAccess(userId, requestDto.getHubId());
+        }
+
         // MASTER 권한이면 바로 생성 진행
         if (userRole == UserRole.MASTER) {
             return createCompanyAndPublishEvent(requestDto, userId);
-        }
-
-        // HUB_MANAGER의 경우 본인 허브인지 검증 필요
-        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
-        UUID managerHubId = identityIntegrationResponse.getHubId(); // 허브 관리자 권한의 허브 ID
-
-        if (!managerHubId.equals(requestDto.getHubId())) {
-            throw new IllegalArgumentException("해당 허브의 업체만 생성할 수 있습니다.");
         }
 
         // 검증 통과 후 업체 생성
@@ -89,6 +95,7 @@ public class CompanyService {
                 requestDto.getHubId(),
                 requestDto.getCompanyType(),
                 requestDto.getAddress(),
+                requestDto.getUserId(),
                 userId
         );
 
@@ -133,9 +140,14 @@ public class CompanyService {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+            verifyHubAccess(userId, requestDto.getHubId());
+        }
+
         Company company = companyRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
 
-        // 업체의 userId와 JWT userID 일치하는지 확인
+        // 업체의 업체 담당자인지 확인 - userId와 JWT userID 일치하는지 확인
         if (!company.getUserId().equals(userId)) {
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }

@@ -17,11 +17,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CompanyService {
 
+    private final HubClient hubClient;
+
     private final CompanyRepository companyRepository;
 
     private final IdentityIntegrationEventPublisher eventPublisher;
-  
+
+    public Integer verifiedHubInfo(UUID hubId){
+        return hubClient.verifiedHub(hubId);
+    }
+
     public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
+        //존재하는 허브인지 확인
+        Integer hub = verifiedHubInfo(RequestDto.getHubId());
+        if (hub != 1) {
+            throw new IllegalArgumentException("존재하는 HubId가 아닙니다");
+        }
         Company company = Company.create(
                 RequestDto.getCompanyName(),
                 RequestDto.getHubId(),

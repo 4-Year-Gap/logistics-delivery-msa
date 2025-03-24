@@ -73,8 +73,8 @@ public class ProductService {
     }
 
     // 전체 상품 조회_ 어떤 권한도 접근 가능
-    public List<ProductResponseDto> getAllProducts() {
-        List<Product> productList = productRepository.findAll();
+    public List<ProductResponseDto> getAllProducts(String keyword) {
+        List<Product> productList = productRepository.searchProducts(keyword);
 
         return productList.stream()
                 .map(ProductResponseDto::new)
@@ -94,12 +94,19 @@ public class ProductService {
     }
 
     //업체담당자가 등록했던 상품들 조회_권한 설정 필요
-    public List<ProductResponseDto> getProducts(UUID userId) {
+    public List<ProductResponseDto> getProducts(UUID userId, String keyword) {
         //업체 담당자인지 확인 절차가 포함됨
         Company company = companyRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저 ID에 대한 회사 정보가 없습니다."));
 
         List<Product> productList = company.getProducts();
+
+        // keyword가 존재할 경우 필터링 수행
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            productList = productList.stream()
+                    .filter(product -> product.getProductName().toLowerCase().contains(keyword.toLowerCase()))
+                    .toList();
+        }
 
         return productList.stream()
                 .map(ProductResponseDto::new)

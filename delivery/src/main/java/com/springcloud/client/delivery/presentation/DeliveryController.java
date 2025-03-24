@@ -67,11 +67,22 @@ public class DeliveryController {
         return deliveryService.getOrderIdToHubId(hubId,orderId);
     }
 
+    @GetMapping("/hub/list")
+    public List<UUID> getOrderIdListToHubId(@RequestParam UUID hubId) {
+        return deliveryService.getOrderIdListToHubId(hubId);
+    }
 
     @GetMapping("/deliver")
     public UUID getOrderIdToDeliver(@RequestParam UUID orderId, @RequestParam UUID userId){
         return deliveryService.getOrderIdToDeliver(orderId,userId);
     }
+
+
+    @GetMapping("/deliver/list")
+    public List<UUID> getOrderIdListToDeliver(@RequestParam UUID userId){
+        return deliveryService.getOrderIdListToDeliver(userId);
+    }
+
 
     @GetMapping("/test")
     public ApiResponse<?> deleteDelivery(){

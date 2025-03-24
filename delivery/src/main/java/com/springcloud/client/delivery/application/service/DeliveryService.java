@@ -141,7 +141,7 @@ public class DeliveryService {
         delivery.setStatus(command.getStatus());
 
         Integer seq = null;
-        // 허브에서 받음
+
         if(command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
 
             if(command.getArrivedHub().equals(delivery.getEndHubId())){
@@ -203,12 +203,36 @@ public class DeliveryService {
     }
 
     public UUID getOrderIdToDeliver(UUID orderId, UUID userId) {
-        Optional<UUID> deliveryHubRoute = deliveryHubRouteRepository.findByOrderIdAndSearchDeliver(orderId, userId);
+        Optional<UUID> orderIdList = deliveryHubRouteRepository.findByOrderIdAndSearchDeliver(orderId, userId);
 
-        if (deliveryHubRoute.isPresent()) {
-            return deliveryHubRoute.get();
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
         } else {
             throw new IllegalArgumentException("주문이 존재하지 않습니다.");
         }
     }
+
+    public List<UUID> getOrderIdListToDeliver(UUID userId) {
+        Optional<List<UUID>> orderIdList = deliveryHubRouteRepository.findByUserIdSearchDeliver(userId);
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public List<UUID> getOrderIdListToHubId(UUID hubId) {
+        Optional<List<UUID>> orderIdList = deliveryHubRouteRepository.findByHubIdSearchDeliver(hubId);
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public void updateDeliveryEvent(OrderStatusEvent value) {
+        Delivery delivery = deliveryRepository.findByOrderId(value.getOrderId());
+        delivery.setStatus(DeliveryStatusEnum.valueOf(value.getStatus()));
+    }
+
 }

@@ -4,6 +4,8 @@ package com.spring_cloud.eureka.client.order.config;
 
 import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationCommand;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderStatusEvent;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.ProductUpdateEvent;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
@@ -78,4 +80,42 @@ public class KafkaConfig {
         return new KafkaTemplate<>(userProducerFactory());
     }
 
+    @Bean
+    public ProducerFactory<String, ProductUpdateEvent> ProductproducerFactory() {
+
+        Map<String, Object> configProps = new HashMap<>(commonConfig());
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ProductUpdateEvent.class);
+        configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+        configProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+        String jaasConfig = String.format(
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
+                username, password);
+        configProps.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, ProductUpdateEvent> productUpdateKafkaTemplate() {
+        return new KafkaTemplate<>(ProductproducerFactory());
+    }
+
+
+    @Bean
+    public ProducerFactory<String, OrderStatusEvent> statusproducerFactory() {
+
+        Map<String, Object> configProps = new HashMap<>(commonConfig());
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, OrderStatusEvent.class);
+        configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+        configProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+        String jaasConfig = String.format(
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
+                username, password);
+        configProps.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderStatusEvent> statusKafkaTemplate() {
+        return new KafkaTemplate<>(statusproducerFactory());
+    }
 }

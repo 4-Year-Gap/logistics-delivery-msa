@@ -11,4 +11,8 @@ public interface CustomDeliveryHubRouteRepository {
     Optional<UUID> findByOrderIdAndStartHubOrDestinationHub(UUID orderId, UUID hubId);
 
     Optional<UUID> findByOrderIdAndSearchDeliver(UUID orderId, UUID userId);
+
+    Optional<List<UUID>> findByUserIdSearchDeliver(UUID userId);
+
+    Optional<List<UUID>> findByHubIdSearchDeliver(UUID hubId);
 }

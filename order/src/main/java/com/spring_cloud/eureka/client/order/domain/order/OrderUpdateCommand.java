@@ -12,4 +12,5 @@ public class OrderUpdateCommand {
     private UUID orderId;
     private OrderEntityStatus orderEntityStatus;
     private UUID userId;
+    private String userRole;
 }

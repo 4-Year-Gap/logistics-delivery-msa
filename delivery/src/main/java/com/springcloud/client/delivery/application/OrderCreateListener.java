@@ -3,6 +3,7 @@ package com.springcloud.client.delivery.application;
 
 import com.springcloud.client.delivery.application.service.DeliveryService;
 import com.springcloud.client.delivery.domain.delivery.OrderCreateEvent;
+import com.springcloud.client.delivery.domain.delivery.OrderStatusEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,6 +22,12 @@ public class OrderCreateListener {
     public void createOrderEvent(ConsumerRecord<String, OrderCreateEvent> record){
 
         deliveryService.confirmDelivery(record.value());
+    }
+
+    @KafkaListener(groupId = "order_group",topics = "order-status-topic")
+    public void updateStatusOrderEvent(ConsumerRecord<String, OrderStatusEvent> record){
+
+        deliveryService.updateDeliveryEvent(record.value());
     }
 
 }

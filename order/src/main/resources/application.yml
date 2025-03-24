@@ -51,3 +51,4 @@ kafka:
       order-create: order-topic
       product_decrease: product_decrease
       integrated-user-topic: integrated-user-topic
+      order-status: order-status-topic

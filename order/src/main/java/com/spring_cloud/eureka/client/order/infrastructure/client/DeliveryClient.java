@@ -23,4 +23,10 @@ public interface DeliveryClient {
 
     @GetMapping("/api/deliveries/hub")
     UUID getOrderIdToHubId(@RequestParam UUID hubId, @RequestParam UUID orderId);
+
+    @GetMapping("/api/deliveries/deliver/list")
+    List<UUID> getOrderIdListToDeliver(@RequestParam UUID userId);
+
+    @GetMapping("/api/deliveries/hub")
+    List<UUID> getOrderIdListToHub(@RequestParam UUID hubId);
 }

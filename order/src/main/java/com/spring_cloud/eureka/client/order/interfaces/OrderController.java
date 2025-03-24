@@ -5,9 +5,11 @@ import com.spring_cloud.eureka.client.order.application.OrderFacade;
 import com.spring_cloud.eureka.client.order.common.ApiResponse;
 import com.spring_cloud.eureka.client.order.domain.order.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.*;
@@ -44,10 +46,11 @@ public class OrderController {
     @PatchMapping
     public ApiResponse<?> updateOrder(
             @RequestHeader(name = "X-USER-ID") UUID userId,
+            @RequestHeader(name = "X-USER-ROLE") String userRole,
             @RequestBody OrderUpdateRequest orderUpdateRequest) {
 
         System.out.println(userId + "$$$$$$$$$$$$$$");
-        OrderUpdateCommand command = orderUpdateRequest.toCommand(userId);
+        OrderUpdateCommand command = orderUpdateRequest.toCommand(userId,userRole);
         OrderUpdateInfo info = orderFacade.updateOrder(command);
         return ApiResponse.ok("일단 업데이트 성공");
     }
@@ -62,17 +65,17 @@ public class OrderController {
         OrderReadCommand command = new OrderReadCommand(orderId, userId, userRole);
         return ApiResponse.ok(orderFacade.getOneOrderInformationById(command));
     }
-//
-//    @GetMapping("/search")
-//    public ApiResponse<?> getOrders(
-//            @Header(name = "X-USER-ID") Integer userId,
-//            @Header(name = "X-USER-ROLE") String userRole,
-//            Pageable pageable
-//    ){
-//        OrderSearchCondition orderSearchCondition = new OrderSearchCondition(userId,userRole);// 나중에 condition
-//
-//        return ApiResponse.ok(orderFacade.getOrders(pageable,orderSearchCondition));
-//    }
+
+    @GetMapping("/search")
+    public ApiResponse<?> getOrders(
+            @RequestHeader(name = "X-USER-ID") UUID userId,
+            @RequestHeader(name = "X-USER-ROLE") String userRole,
+            Pageable pageable
+    ){
+        OrderSearchCondition orderSearchCondition = new OrderSearchCondition(userId,userRole);
+
+        return ApiResponse.ok(orderFacade.getOrders(pageable,orderSearchCondition));
+    }
 
     @GetMapping("/test")
     public void test() {
@@ -99,6 +102,12 @@ public class OrderController {
 
         updateKafkaTemplate.send("integrated-user-topic","ORDER:CREATE", identityIntegrationCommand);
 
+    }
+
+    @GetMapping("/stock/test")
+    public ResponseEntity<String> getStock() {
+        System.out.println("test");
+        return ResponseEntity.ok("Success");
     }
 
 }

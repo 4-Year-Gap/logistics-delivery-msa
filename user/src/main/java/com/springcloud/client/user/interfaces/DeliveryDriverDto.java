@@ -13,11 +13,26 @@ public class DeliveryDriverDto {
     public static class DeliveryDriverRequest {
         private UUID userId;
         private UUID hubId;
+        private UUID deliveryDriverId;
+        private String username;
+        private String slackId;
+        private DeliveryDriverRole role;
 
         public DeliveryCommand toCommand() {
             return DeliveryCommand.builder()
                     .userId(this.userId)
                     .hubId(this.hubId)
+                    .build();
+        }
+
+        public DeliveryCommand toCommand(UUID deliveryDriverId) {
+            return DeliveryCommand.builder()
+                    .userId(this.userId)
+                    .hubId(this.hubId)
+                    .deliveryDriverId(deliveryDriverId)
+                    .username(this.username)
+                    .slackId(this.slackId)
+                    .role(this.role)
                     .build();
         }
     }

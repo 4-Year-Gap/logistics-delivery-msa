@@ -56,7 +56,17 @@ public class CompanyService {
         UUID managerHubId = identityIntegrationResponse.getHubId(); // 허브 관리자 권한의 허브 ID
 
         if (!managerHubId.equals(hubId)) {
-            throw new IllegalArgumentException("해당 허브의 업체만 생성할 수 있습니다.");
+            throw new IllegalArgumentException("해당 허브의 업체만 접근할 수 있습니다.");
+        }
+    }
+
+    // 업체 접근 권한 체크
+    private void verifyCompanyAccess(UUID userId, UUID companyId) {
+        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+        UUID managerCompanyId = identityIntegrationResponse.getCompanyId(); // 허브 관리자 권한의 허브 ID
+
+        if (!managerCompanyId.equals(companyId)) {
+            throw new IllegalArgumentException("해당 유저의 담당 업체만 접근할 수 있습니다.");
         }
     }
 
@@ -70,11 +80,6 @@ public class CompanyService {
         // HUB_MANAGER인 경우 허브 검증
         if (userRole == UserRole.HUB_MANAGER) {
             verifyHubAccess(userId, requestDto.getHubId());
-        }
-
-        // MASTER 권한이면 바로 생성 진행
-        if (userRole == UserRole.MASTER) {
-            return createCompanyAndPublishEvent(requestDto, userId);
         }
 
         // 검증 통과 후 업체 생성
@@ -134,7 +139,7 @@ public class CompanyService {
 
     @Transactional
     // 업체 정보 수정
-    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId, UserRole userRole) {
+    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID companyId, UUID userId, UserRole userRole) {
         //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
         if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
             throw new IllegalArgumentException("권한이 없습니다.");
@@ -145,12 +150,19 @@ public class CompanyService {
             verifyHubAccess(userId, requestDto.getHubId());
         }
 
-        Company company = companyRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
-
         // 업체의 업체 담당자인지 확인 - userId와 JWT userID 일치하는지 확인
-        if (!company.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        if (userRole == UserRole.COMPANY_MANAGER) {
+            verifyCompanyAccess(userId, companyId);
         }
+
+        // 존재하는 허브인지 확인_변경할 허브가 존재하는지 확인하기
+        Integer hub = verifiedHubInfo(requestDto.getHubId());
+        if (hub != 1) {
+            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
+        }
+
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
+
         //업체 엔티티 수정
         company.updateCompany(requestDto.getCompanyName(), requestDto.getHubId(), requestDto.getAddress(), userId);
 
@@ -191,12 +203,20 @@ public class CompanyService {
 
     // 업체 삭제
     @Transactional
-    public void deleteCompany(UUID companyId, UUID userId) {
-        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("company not found"));
-        // 업체의 userId와 JWT userID 일치하는지 확인
-        if (!company.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+    public void deleteCompany(UUID companyId, UUID userId, UserRole userRole) {
+        //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
         }
+
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new NoSuchElementException("해당 업체가 존재하지 않습니다."));
+
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+
+            verifyHubAccess(userId, company.getHubId());
+        }
+
         company.deletedCompany(userId);
 
         //kafka 이벤트 큐 보내기
@@ -210,4 +230,5 @@ public class CompanyService {
     public Company getCompanyByProductId(UUID productId) {
         return companyRepository.findByProducts_Id(productId).orElseThrow();
     }
+
 }

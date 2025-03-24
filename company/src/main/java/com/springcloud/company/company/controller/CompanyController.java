@@ -30,14 +30,15 @@ public class CompanyController {
     }
 
     @Description("업체 수정")
-    @PatchMapping
+    @PatchMapping("/{companyId}")
     private CompanyResponseDto updateCompany(
             @RequestBody UpdateCompanyRequestDto companyRequestDto,
+            @PathVariable UUID companyId,
             HttpServletRequest request
     ){
         //UUID userId = UUID.fromString("a5c5534b-6a26-436e-a14a-ecb498a30a42"); //TODO: 업체 등록 시 userId
         UserInfoHeader userInfo = new UserInfoHeader(request);
-        return companyService.updateCompany(companyRequestDto, userInfo.getUserId(), userInfo.getUserRole());
+        return companyService.updateCompany(companyRequestDto, companyId, userInfo.getUserId(), userInfo.getUserRole());
 
     }
 
@@ -61,11 +62,12 @@ public class CompanyController {
 
     @Description("업체 삭제")
     @DeleteMapping("/{companyId}")
-    private void deleteCompany(@PathVariable UUID companyId
-                               //, @RequestHeader("X-User-Id") UUID userId -> TODO: 게이트웨이 완성 시 주석 해제
+    private void deleteCompany(@PathVariable UUID companyId,
+                               HttpServletRequest request
     ){
-        UUID userId = UUID.fromString("a5c5534b-6a26-436e-a14a-ecb498a30a42"); //TODO: 업체 등록 시 userId
-        companyService.deleteCompany(companyId, userId);
+//        UUID userId = UUID.fromString("a5c5534b-6a26-436e-a14a-ecb498a30a42"); //TODO: 업체 등록 시 userId
+        UserInfoHeader userInfo = new UserInfoHeader(request);
+        companyService.deleteCompany(companyId, userInfo.getUserId(), userInfo.getUserRole());
     }
 
     //주문 서버 요청 - feignClient

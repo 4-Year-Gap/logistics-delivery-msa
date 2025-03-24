@@ -53,11 +53,11 @@ public class Company extends BaseEntity {
     private List<Product> products = new ArrayList<>();
 
 
-    public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID userId) {
+    public static Company create(String companyName, UUID hubId, CompanyType companyType, String address, UUID companyUserId, UUID userId) {
         Company company = new Company();
         company.companyName = companyName;
         company.hubId = hubId;
-        company.userId = userId;
+        company.userId = companyUserId;
         company.companyType = companyType;
         company.address = address;
         company.createdBy = String.valueOf(userId);
@@ -80,6 +80,17 @@ public class Company extends BaseEntity {
 
     public void deletedCompany(UUID userId) {
         delete(userId);
+    }
+
+    // 상품 등록 메서드
+    public Product createProduct(String productName, Integer price, Integer stock, UUID userId) {
+        // 정적 팩토리 메서드 호출하여 Product 생성
+        Product product = Product.create(productName, price, stock, userId, this); // Company 객체를 참조
+
+        // 회사에 상품 추가
+        this.products.add(product);
+
+        return product;
     }
 
     public void removeProductByProductId(UUID productId) {

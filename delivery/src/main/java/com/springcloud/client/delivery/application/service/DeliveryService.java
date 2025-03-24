@@ -37,42 +37,35 @@ public class DeliveryService {
     private final KafkaTemplate<String,IdentityIntegrationDTO> updateKafkaTemplate;
 
 
-    public Page<Delivery> getDeliveries(Integer userId, String role, Pageable pageable) {
+    public Page<Delivery> getDeliveries(UUID userId, String role, Pageable pageable,UUID hubId) {
 
-        //N + 1 문제 해결 필요
-        return deliveryRepository.search(userId,role,pageable);
+        return deliveryRepository.search(userId,role,pageable,hubId);
     }
 
     public Delivery getDelivery(Integer userId, String role, UUID deliveryId) {
 
 
-        //N + 1 문제 해결 필요
-        Delivery delivery = deliveryRepository.findById(deliveryId)
+        return deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 배송 정보를 찾을 수 없습니다."));
-
-
-
-        return delivery;
     }
-
+    
     @Transactional
     public void confirmDelivery(OrderCreateEvent orderCreateEvent) {
 
 
-        HubClientResponse<List<HubRoute>> hubClientResponse = null;
+        HubClientResponse<List<HubRoute>> hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub());
 
-        try {
-            hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub());
-        }catch (Exception e){
-            System.out.println(e.getMessage());
+        if(hubClientResponse.getData() == null){
+            throw new IllegalArgumentException("허브 루트 정보를 받아오는데 실패하였습니다");
         }
-//        DeliveryDriverClientResponse deliveryDriverClientResponse = userInfoClient.getRoute();
 
-        DeliveryDriverClientResponse deliveryDriverClientResponse = new DeliveryDriverClientResponse();
-        deliveryDriverClientResponse.setDeliveryDriverId(UUID.randomUUID());
-        deliveryDriverClientResponse.setRole(DeliveryDriverRole.HUB);
-        deliveryDriverClientResponse.setUsername("testDriver");
-        deliveryDriverClientResponse.setSlackId("testDriver@naver.com");
+        DeliveryDriverClientResponse deliveryDriverClientResponse = userInfoClient.getRoute();
+
+
+        if(deliveryDriverClientResponse == null){
+            throw new IllegalArgumentException("배송자 정보를 받아오는데 실패하였습니다");
+        }
+
 
 
 
@@ -154,7 +147,6 @@ public class DeliveryService {
                 return;
             }
 
-            // 다음 허브 배송 담당자 정하기
             for(DeliveryHubRoute hubRoute :  delivery.getDeliveryHubRouteList()){
                 if(hubRoute.getDestinationHub().equals(command.getArrivedHub())){
                     hubRoute.updateDeliveryStatus(DeliveryStatusEnum.ACCEPTED);

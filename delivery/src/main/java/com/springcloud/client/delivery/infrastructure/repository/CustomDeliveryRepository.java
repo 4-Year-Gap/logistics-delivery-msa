@@ -10,7 +10,6 @@ import java.util.UUID;
 @Repository
 public interface CustomDeliveryRepository {
 
-    Page<Delivery> search(Integer userId, String role, Pageable pageable);
+    Page<Delivery> search(UUID userId, String role, Pageable pageable,UUID hubId);
 
-    Delivery findByOrderIdAndConectionHub(UUID hubId, UUID orderId);
 }

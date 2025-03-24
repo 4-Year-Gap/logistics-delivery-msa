@@ -7,6 +7,5 @@ public record UpdateHubRequest(UUID id,
                                String name,
                                String address,
                                BigDecimal latitude,
-                               BigDecimal longitude,
-                               UUID userId) {
+                               BigDecimal longitude) {
 }

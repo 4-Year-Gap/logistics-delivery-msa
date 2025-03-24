@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseEntity {
+public abstract class BaseEntity {
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -50,5 +50,15 @@ public class BaseEntity {
     public void delete(String deletedBy) {
         this.deletedBy = deletedBy;
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void update(String updateBy) {
+        this.updatedBy = updateBy;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void create(String createBy) {
+        this.createdBy = createBy;
+        this.createdAt = LocalDateTime.now();
     }
 }

@@ -31,22 +31,33 @@ public class HubRouteService {
     /**
      * 경로 정보를 기반으로 HubRoute 엔티티를 생성
      */
-    public HubRoute createHubRoute(Hub startHub, Hub goalHub, FindNaverRouteQuery findNaverRouteQuery) {
-        return HubRoute.builder()
+    public HubRoute createHubRoute(Hub startHub,
+                                   Hub goalHub,
+                                   FindNaverRouteQuery findNaverRouteQuery,
+                                   UUID userId) {
+        HubRoute hubRoute = HubRoute.builder()
                 .Id(UUID.randomUUID())
                 .fromHub(startHub)
                 .toHub(goalHub)
                 .timeRequired(findNaverRouteQuery.timeRequired())
                 .moveDistance(findNaverRouteQuery.moveDistance())
                 .build();
+
+        hubRoute.create(String.valueOf(userId));
+
+        return hubRoute;
     }
 
     /**
      * 양방향 HubRoute 생성
      */
-    public List<HubRoute> createBidirectionalRoutes(Hub startHub, Hub goalHub, FindNaverRouteQuery forwardFindNaverRouteQuery, FindNaverRouteQuery backwardFindNaverRouteQuery) {
-        HubRoute forwardRoute = createHubRoute(startHub, goalHub, forwardFindNaverRouteQuery);
-        HubRoute backwardRoute = createHubRoute(goalHub, startHub, backwardFindNaverRouteQuery);
+    public List<HubRoute> createBidirectionalRoutes(Hub startHub,
+                                                    Hub goalHub,
+                                                    FindNaverRouteQuery forwardFindNaverRouteQuery,
+                                                    FindNaverRouteQuery backwardFindNaverRouteQuery,
+                                                    UUID userId) {
+        HubRoute forwardRoute = createHubRoute(startHub, goalHub, forwardFindNaverRouteQuery, userId);
+        HubRoute backwardRoute = createHubRoute(goalHub, startHub, backwardFindNaverRouteQuery, userId);
         return Arrays.asList(forwardRoute, backwardRoute);
     }
 

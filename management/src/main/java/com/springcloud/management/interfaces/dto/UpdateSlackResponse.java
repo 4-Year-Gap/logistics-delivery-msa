@@ -6,12 +6,12 @@ import com.springcloud.management.domain.entity.Slack;
 
 import java.util.UUID;
 
-public record CreateSlackResponse(UUID slackId,
+public record UpdateSlackResponse(UUID slackId,
                                   Contents contents,
                                   UUID userId) {
 
-    public static CreateSlackResponse fromEntity(Slack slack){
-        return new CreateSlackResponse(
+    public static UpdateSlackResponse fromEntity(Slack slack){
+        return new UpdateSlackResponse(
                 slack.getId(),
                 slack.getContents(),
                 slack.getUserId()

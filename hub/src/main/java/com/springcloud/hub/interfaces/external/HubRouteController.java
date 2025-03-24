@@ -2,6 +2,7 @@ package com.springcloud.hub.interfaces.external;
 
 import com.springcloud.hub.application.dto.*;
 import com.springcloud.hub.application.service.HubRouteFacade;
+import com.springcloud.hub.domain.service.UserRole;
 import com.springcloud.hub.infrastructure.dto.ListHubRouteQuery;
 import com.springcloud.hub.interfaces.dto.*;
 import com.springcloud.hub.interfaces.exception.ResponseDto;
@@ -34,8 +35,9 @@ public class HubRouteController {
     }
 
     @GetMapping("/cache/warmup")
-    public ResponseEntity<ResponseDto<String>> cacheWarmUp() {
-        hubRouteFacade.cacheWarmUp();
+    public ResponseEntity<ResponseDto<String>> cacheWarmUp(
+            @RequestHeader("X-USER-ROLE") UserRole role) {
+        hubRouteFacade.cacheWarmUp(role);
 
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success("complete"));
     }
@@ -53,8 +55,10 @@ public class HubRouteController {
 
     @PostMapping("/naver")
     public ResponseEntity<ResponseDto<HubRouteListCommand>> createOptimalRoute(
-            @RequestBody CreateHubRouteRequest requestDto) {
-        HubRouteListCommand routeList = hubRouteFacade.createBidirectionalRoutes(requestDto);
+            @RequestBody CreateHubRouteRequest requestDto,
+            @RequestHeader("X-USER-ID") UUID userId,
+            @RequestHeader("X-USER-ROLE") UserRole role) {
+        HubRouteListCommand routeList = hubRouteFacade.createBidirectionalRoutes(requestDto, userId, role);
 
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(routeList));
     }
@@ -69,17 +73,21 @@ public class HubRouteController {
 
     @PatchMapping
     public ResponseEntity<ResponseDto<FindHubRouteQuery>> updateHubRoute(
-            @RequestBody UpdateHubRouteRequest requestDto) {
+            @RequestBody UpdateHubRouteRequest requestDto,
+            @RequestHeader("X-USER-ID") UUID userId,
+            @RequestHeader("X-USER-ROLE") UserRole role) {
 
-        FindHubRouteQuery findHubQuery = hubRouteFacade.updateHubRoute(requestDto);
+        FindHubRouteQuery findHubQuery = hubRouteFacade.updateHubRoute(requestDto, userId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(findHubQuery));
     }
 
     @DeleteMapping
     public ResponseEntity<ResponseDto<FindHubRouteQuery>> deleteHubRoute(
-            @RequestBody DeleteHubRouteRequest requestDto) {
+            @RequestBody DeleteHubRouteRequest requestDto,
+            @RequestHeader("X-USER-ID") UUID userId,
+            @RequestHeader("X-USER-ROLE") UserRole role) {
 
-        FindHubRouteQuery findHubQuery = hubRouteFacade.deleteHubRoute(requestDto);
+        FindHubRouteQuery findHubQuery = hubRouteFacade.deleteHubRoute(requestDto, userId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.success(findHubQuery));
     }
 }

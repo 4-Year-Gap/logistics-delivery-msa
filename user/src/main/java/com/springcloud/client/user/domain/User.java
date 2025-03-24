@@ -39,6 +39,32 @@ public class User extends BaseEntity {
     @Comment("사용자 권한")
     private UserRole role;
 
+    @Column(nullable = true)
+    @Comment("허브 관리자의 소속 허브 ID (role이 HUB_MANAGER인 경우)")
+    private UUID hubId;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = true)
     private DeliveryDriver deliveryDriver;
+
+    public void update(UserCommand userCommand) {
+        if (userCommand.getUsername() != null) this.username = userCommand.getUsername();
+        if (userCommand.getSlackId() != null) this.slackId = userCommand.getSlackId();
+        if (userCommand.getUserRole() != null) this.role = userCommand.getUserRole();
+        if (userCommand.getHubId() != null) {
+            this.hubId = userCommand.getHubId();
+            this.role = UserRole.HUB_MANAGER;
+        }
+    }
+
+    public void updateUsername(String username) {
+        this.username = username;
+    }
+
+    public void updateSlackId(String slackId) {
+        this.slackId = slackId;
+    }
+
+    public void updateRole(UserRole role) {
+        this.role = role;
+    }
 }

@@ -23,7 +23,7 @@ public class DeliveryDriver extends BaseEntity {
     private UUID deliveryDriverId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = false, unique = false)
     private User user;
 
     @Comment("소속 허브 ID (허브 배송 기사인 경우 null)")
@@ -38,4 +38,11 @@ public class DeliveryDriver extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     @Comment("배송 기사 역할 (허브 or 업체)")
     private DeliveryDriverRole role;
+
+    public void update(DeliveryCommand command) {
+        if (command.getHubId() != null) this.hubId = command.getHubId();
+        if (command.getRole() != null) this.role = command.getRole();
+        if (command.getUsername() != null) this.user.updateUsername(command.getUsername());
+        if (command.getSlackId() != null) this.user.updateSlackId(command.getSlackId());
+    }
 }

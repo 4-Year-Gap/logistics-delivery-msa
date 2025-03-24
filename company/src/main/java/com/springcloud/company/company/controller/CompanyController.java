@@ -51,7 +51,7 @@ public class CompanyController {
             @RequestParam(required = false, defaultValue = "asc") String sortDirection, // 기본 정렬 방향은 오름차순
             @RequestParam(required = false) String keyword // 검색어 (옵션)
     ) {
-        return companyService.getAllCompany(page, size, sortBy, sortDirection, keyword);
+        return companyService.getAllCompany(page - 1, size, sortBy, sortDirection, keyword);
     }
 
     @Description("업체 단일 조회")

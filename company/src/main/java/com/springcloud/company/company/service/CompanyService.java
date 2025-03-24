@@ -205,7 +205,7 @@ public class CompanyService {
     @Transactional
     public void deleteCompany(UUID companyId, UUID userId, UserRole userRole) {
         //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
-        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 

@@ -9,22 +9,29 @@ import java.util.UUID;
 
 public record UpdateHubRouteCommand(UUID id,
                                     BigDecimal moveDistanc,
-                                    LocalTime timeRequired) {
-    public static UpdateHubRouteCommand fromUpdateHubRouteRequest(UpdateHubRouteRequest updateHubRequest){
+                                    LocalTime timeRequired,
+                                    UUID userId) {
+    public static UpdateHubRouteCommand fromUpdateHubRouteRequest(UpdateHubRouteRequest updateHubRequest, UUID userId){
         return new UpdateHubRouteCommand(
                 updateHubRequest.id(),
                 updateHubRequest.moveDistance(),
-                updateHubRequest.timeRequired()
+                updateHubRequest.timeRequired(),
+                userId
         );
     }
 
     public HubRoute toEntity(HubRoute hubRoute) {
-        return HubRoute.builder()
+        HubRoute route = HubRoute.builder()
                 .Id(hubRoute.getId())
                 .toHub(hubRoute.getToHub())
                 .fromHub(hubRoute.getFromHub())
                 .moveDistance(moveDistanc)
                 .timeRequired(timeRequired)
                 .build();
+
+        route.update(String.valueOf(userId));
+
+        return route;
+
     }
 }

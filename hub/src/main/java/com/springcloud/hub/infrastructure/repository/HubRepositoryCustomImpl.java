@@ -49,7 +49,8 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                 .selectFrom(hub)
                 .where(
                         hub.deletedAt.isNull(),
-                        nameContains(searchHubQuery.name())
+                        nameContains(searchHubQuery.name()),
+                        hubIdEquals(searchHubQuery.hubId())
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -60,15 +61,25 @@ public class HubRepositoryCustomImpl implements HubRepositoryCustom {
                 .from(hub)
                 .where(
                         hub.deletedAt.isNull(),
-                        nameContains(searchHubQuery.name())
+                        nameContains(searchHubQuery.name()),
+                        hubIdEquals(searchHubQuery.hubId())
                 )
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
     }
 
-    // name이 null이 아닐 경우 LIKE 검색 적용
+    /**
+     * 검색 조건: name이 존재하면 부분 검색
+     */
     private BooleanExpression nameContains(String name) {
         return StringUtils.hasText(name) ? QHub.hub.name.containsIgnoreCase(name) : null;
+    }
+
+    /**
+     * 검색 조건: hubId가 존재하면 해당 hubId로 검색
+     */
+    private BooleanExpression hubIdEquals(UUID hubId) {
+        return (hubId != null) ? QHub.hub.Id.eq(hubId) : null;
     }
 }

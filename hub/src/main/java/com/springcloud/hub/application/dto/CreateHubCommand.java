@@ -11,19 +11,18 @@ public record CreateHubCommand(String name,
                                BigDecimal latitude,
                                BigDecimal longitude,
                                UUID userId) {
-    public static CreateHubCommand fromCreateHubRequest(CreateHubRequest createHubRequest){
+    public static CreateHubCommand fromCreateHubRequest(CreateHubRequest createHubRequest, UUID userId){
         return new CreateHubCommand(
                 createHubRequest.name(),
                 createHubRequest.address(),
                 createHubRequest.latitude(),
                 createHubRequest.longitude(),
-                createHubRequest.userId()
-
+                userId
         );
     }
 
     public Hub toEntity() {
-        return Hub.builder()
+        Hub hubBuild = Hub.builder()
                 .Id(UUID.randomUUID())
                 .name(name)
                 .address(address)
@@ -31,5 +30,9 @@ public record CreateHubCommand(String name,
                 .longitude(longitude)
                 .userId(userId)
                 .build();
+
+        hubBuild.create(String.valueOf(userId));
+
+        return hubBuild;
     }
 }

@@ -1,5 +1,8 @@
 package com.springcloud.hub.interfaces.dto;
 
 
-public record SearchHubRequest(String address) {
+import java.util.UUID;
+
+public record SearchHubRequest(String address,
+                               UUID hubId) {
 }

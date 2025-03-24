@@ -11,6 +11,10 @@ public class DeliveryCommand {
 
     private UUID userId;
     private UUID hubId;
+    private UUID deliveryDriverId;
+    private String username;
+    private String slackId;
+    private DeliveryDriverRole role;
 
     public DeliveryDriver toEntity(User user, int deliveryOrderNumber) {
         return DeliveryDriver.builder()

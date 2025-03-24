@@ -12,19 +12,19 @@ public record UpdateHubCommand(UUID id,
                                BigDecimal latitude,
                                BigDecimal longitude,
                                UUID userId) {
-    public static UpdateHubCommand fromUpdateHubRequest(UpdateHubRequest updateHubRequest){
+    public static UpdateHubCommand fromUpdateHubRequest(UpdateHubRequest updateHubRequest, UUID userId){
         return new UpdateHubCommand(
                 updateHubRequest.id(),
                 updateHubRequest.name(),
                 updateHubRequest.address(),
                 updateHubRequest.latitude(),
                 updateHubRequest.longitude(),
-                updateHubRequest.userId()
+                userId
         );
     }
 
     public Hub toEntity(Hub hub) {
-        return Hub.builder()
+        Hub hubBuild = Hub.builder()
                 .Id(hub.getId())
                 .name(name)
                 .address(address)
@@ -32,5 +32,9 @@ public record UpdateHubCommand(UUID id,
                 .longitude(longitude)
                 .userId(userId)
                 .build();
+
+        hubBuild.update(String.valueOf(userId));
+
+        return hubBuild;
     }
 }

@@ -51,6 +51,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	implementation 'io.github.openfeign:feign-micrometer'
+	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 }
 
 dependencyManagement {
@@ -61,4 +66,24 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/querydsl")
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs += "$buildDir/generated/querydsl"
+		}
+	}
+}
+
+tasks.register("cleanQuerydsl", Delete) {
+	delete file("$buildDir/generated/querydsl")
+}
+
+tasks.named("compileJava") {
+	dependsOn tasks.named("cleanQuerydsl")
 }

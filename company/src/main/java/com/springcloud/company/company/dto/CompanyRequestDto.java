@@ -17,4 +17,6 @@ public class CompanyRequestDto {
     private CompanyType companyType;
     //주소
     private String address;
+    //업체 담당자 배겅_userId
+    private UUID userId;
 }

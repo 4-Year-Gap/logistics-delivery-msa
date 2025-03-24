@@ -52,4 +52,14 @@ public class BaseEntity {
         this.deletedBy = deletedBy;
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void update(String updateBy) {
+        this.updatedBy = updateBy;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void create(String createBy) {
+        this.createdBy = createBy;
+        this.createdAt = LocalDateTime.now();
+    }
 }

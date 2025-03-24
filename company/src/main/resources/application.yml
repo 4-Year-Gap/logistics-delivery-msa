@@ -20,13 +20,21 @@ spring:
     username: ${Kafka_name}
     password: ${Kafka_password}
 
-#  data:
-#    redis:
-#      host: ${Redis_host}
-#      port: 6379
-#      username: ${Redis_name}
-#      password: ${Redis_password}
+  data:
+    redis:
+      host: ${Redis_host}
+      port: 6379
+      username: ${Redis_name}
+      password: ${Redis_password}
 
+
+#management:
+#  zipkin:
+#    tracing:
+#      endpoint: "http://localhost:9411/api/v2/spans"
+#  tracing:
+#    sampling:
+#      probability: 1.0
 
 server:
   port: 19092

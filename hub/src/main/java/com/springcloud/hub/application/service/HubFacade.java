@@ -4,15 +4,17 @@ import com.springcloud.hub.application.dto.*;
 import com.springcloud.hub.domain.entity.Hub;
 import com.springcloud.hub.domain.repository.*;
 import com.springcloud.hub.domain.service.HubService;
+import com.springcloud.hub.domain.service.UserRole;
 import com.springcloud.hub.infrastructure.dto.KakaoMapApiResponse;
 import com.springcloud.hub.infrastructure.external.IdentityIntegrationEventPublisher;
 import com.springcloud.hub.infrastructure.external.MapFinder;
 import com.springcloud.hub.interfaces.dto.*;
+import com.springcloud.hub.interfaces.exception.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +33,15 @@ public class HubFacade {
         return mapFinder.getLatitudeAndLongitude(findAddressQuery, pageable);
     }
 
-    public FindHubQuery createHub(CreateHubRequest requestDto) {
-        CreateHubCommand command = CreateHubCommand.fromCreateHubRequest(requestDto);
+    public FindHubQuery createHub(CreateHubRequest requestDto, UUID userId, UserRole role) {
+        if (!UserRole.MASTER.equals(role)) {
+            throw new AccessDeniedException("허브 생성 권한이 없습니다.");
+        }
+
+        CreateHubCommand command = CreateHubCommand.fromCreateHubRequest(requestDto, userId);
         Hub createHub = hubStore.save(command.toEntity());
 
-        if (command.userId() != null) {
+        if (userId != null) {
             CreateIdentityIntegrationCommand integrationCommand = CreateIdentityIntegrationCommand.fromEntity(createHub);
             eventPublisher.publish(integrationCommand);
         }
@@ -48,8 +54,13 @@ public class HubFacade {
         return ListHubQuery.fromEntities(hubReader.findAllHubs(query, pageable));
     }
 
-    public FindHubQuery updateHub(UpdateHubRequest requestDto) {
-        UpdateHubCommand command = UpdateHubCommand.fromUpdateHubRequest(requestDto);
+    public FindHubQuery updateHub(UpdateHubRequest requestDto, UUID userId, UserRole role) {
+        if (!UserRole.MASTER.equals(role)) {
+            throw new AccessDeniedException("허브 수정 권한이 없습니다.");
+        }
+
+        UpdateHubCommand command = UpdateHubCommand.fromUpdateHubRequest(requestDto, userId);
+
         Hub hub = command.toEntity(hubService.findById(command.id()));
         Hub updateHub = hubStore.save(hub);
 
@@ -61,8 +72,12 @@ public class HubFacade {
         return FindHubQuery.fromFindHubQuery(updateHub);
     }
 
-    public FindHubQuery deleteHub(DeleteHubRequest requestDto) {
-        DeleteHubCommand command = DeleteHubCommand.fromDeleteHubRequest(requestDto);
+    public FindHubQuery deleteHub(DeleteHubRequest requestDto, UUID userId, UserRole role) {
+        if (!UserRole.MASTER.equals(role)) {
+            throw new AccessDeniedException("허브 삭제 권한이 없습니다.");
+        }
+
+        DeleteHubCommand command = DeleteHubCommand.fromDeleteHubRequest(requestDto, userId);
         Hub hub = command.toEntity(hubService.findById(command.id()));
         Hub updateHub = hubStore.save(hub);
 

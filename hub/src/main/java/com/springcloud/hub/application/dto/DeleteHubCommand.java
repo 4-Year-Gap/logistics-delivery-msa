@@ -8,15 +8,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record DeleteHubCommand(UUID id) {
-    public static DeleteHubCommand fromDeleteHubRequest(DeleteHubRequest deleteHubRequest){
+public record DeleteHubCommand(UUID id,
+                               UUID userId) {
+    public static DeleteHubCommand fromDeleteHubRequest(DeleteHubRequest deleteHubRequest, UUID userId){
         return new DeleteHubCommand(
-                deleteHubRequest.id()
+                deleteHubRequest.id(),
+                userId
         );
     }
 
     public Hub toEntity(Hub hub) {
-        hub.delete("system"); // 삭제 일시와 삭제자만 설정
+        hub.delete(String.valueOf(userId));
         return hub;
     }
 }

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class OrderUpdateInfo {
 
-    private String orderedBy;
+    private UUID orderedBy;
     private UUID consumeCompanyId;
     private UUID supplyCompanyId;
     private UUID productId;

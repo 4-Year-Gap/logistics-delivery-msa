@@ -13,11 +13,12 @@ public class OrderUpdateRequest {
     private OrderEntityStatus orderEntityStatus;
 
 
-    public OrderUpdateCommand toCommand(Integer userId) {
+    public OrderUpdateCommand toCommand(UUID userId,String userRole) {
         return OrderUpdateCommand.builder()
                 .orderId(orderId)
                 .orderEntityStatus(orderEntityStatus)
                 .userId(userId)
+                .userRole(userRole)
                 .build();
 
     }

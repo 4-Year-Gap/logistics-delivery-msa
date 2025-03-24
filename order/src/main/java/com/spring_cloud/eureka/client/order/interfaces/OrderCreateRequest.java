@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Getter
 public class OrderCreateRequest{
-
     private UUID supplierId;// 제품 공급 업체
     private UUID receivingCompanyId;// 제품 수요 업체
     private UUID productId; // 주문한 제품
@@ -18,7 +17,7 @@ public class OrderCreateRequest{
     private String requestMessage;
     private String receiverSlackId;
 
-    public OrderCreateCommand toCommand(Integer id){
+    public OrderCreateCommand toCommand(UUID id){
         return OrderCreateCommand.builder()
                 .supplierId(supplierId)
                 .receivingCompanyId(receivingCompanyId)

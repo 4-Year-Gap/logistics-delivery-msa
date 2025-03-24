@@ -1,8 +1,8 @@
 package com.springcloud.client.delivery.domain.delivery;
 
 public enum DeliveryStatusEnum {
-    NOT_ACCEPTED("Not Accepted"),
-    ACCEPTED("Accepted"),
+    NOT_ACCEPTED("허브 미도착"),
+    ACCEPTED("허브 도착"),
     IN_TRANSIT("허브 이동중"),
     IN_DELIVER("업체 배송중"),
     CANCELED("취소"),

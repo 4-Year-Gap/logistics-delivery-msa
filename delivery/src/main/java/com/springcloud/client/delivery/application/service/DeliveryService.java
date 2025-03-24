@@ -8,17 +8,19 @@ import com.springcloud.client.delivery.infrastructure.client.UserClient;
 import com.springcloud.client.delivery.infrastructure.dto.DeliveryDriverClientResponse;
 import com.springcloud.client.delivery.infrastructure.dto.HubClientResponse;
 import com.springcloud.client.delivery.infrastructure.dto.HubRoute;
+import com.springcloud.client.delivery.infrastructure.repository.DeliveryHubRouteRepository;
 import com.springcloud.client.delivery.infrastructure.repository.DeliveryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,28 +30,23 @@ import java.util.stream.IntStream;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryHubRouteRepository deliveryHubRouteRepository;
+
     private final HubClient hubClient;
-//    private final DeliveryDriverClient deliveryDriverClient;
     private final UserClient userInfoClient;
+    private final KafkaTemplate<String,IdentityIntegrationDTO> updateKafkaTemplate;
 
 
-    public Page<Delivery> getDeliveries(Integer userId, String role, Pageable pageable) {
+    public Page<Delivery> getDeliveries(UUID userId, String role, Pageable pageable,UUID hubId) {
 
-        //N + 1 문제 해결 필요
-        return deliveryRepository.search(userId,role,pageable);
-
+        return deliveryRepository.search(userId,role,pageable,hubId);
     }
 
     public Delivery getDelivery(Integer userId, String role, UUID deliveryId) {
 
 
-        //N + 1 문제 해결 필요
-        Delivery delivery = deliveryRepository.findById(deliveryId)
+        return deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 배송 정보를 찾을 수 없습니다."));
-
-
-
-        return delivery;
     }
 
     @Transactional
@@ -57,15 +54,35 @@ public class DeliveryService {
 
 
         HubClientResponse<List<HubRoute>> hubClientResponse = hubClient.getRoute(orderCreateEvent.getStartHub(),orderCreateEvent.getEndHub());
+
+        if(hubClientResponse.getData() == null){
+            throw new IllegalArgumentException("허브 루트 정보를 받아오는데 실패하였습니다");
+        }
+
         DeliveryDriverClientResponse deliveryDriverClientResponse = userInfoClient.getRoute();
 
-        // 배송 담당자 배정
-        Delivery delivery = createDelivery(orderCreateEvent,hubClientResponse,deliveryDriverClientResponse);
 
-        deliveryRepository.save(delivery);
+        if(deliveryDriverClientResponse == null){
+            throw new IllegalArgumentException("배송자 정보를 받아오는데 실패하였습니다");
+        }
+
+
+
+
+        Delivery delivery = deliveryRepository.save(createDelivery(orderCreateEvent));
+
+        createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse,delivery);
+
+        IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                .userId(deliveryDriverClientResponse.getDeliveryDriverId())
+                .orderId(orderCreateEvent.getOrderId())
+                .build();
+
+        updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
     }
 
-    private Delivery createDelivery(OrderCreateEvent orderCreateEvent, HubClientResponse<List<HubRoute>> hubClientResponse, DeliveryDriverClientResponse deliveryDriverClientResponse) {
+    @Transactional
+    protected Delivery createDelivery(OrderCreateEvent orderCreateEvent) {
 
 
         return Delivery.create(
@@ -74,28 +91,36 @@ public class DeliveryService {
                 orderCreateEvent.getStartHub(),
                 orderCreateEvent.getEndHub(),
                 orderCreateEvent.getReceiverSlackId(),
-                createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse),
-                orderCreateEvent.getUserId()
+                orderCreateEvent.getReceiverId(),
+                orderCreateEvent.getOrderId(),
+                orderCreateEvent.getCompanyDeliver()
         );
     }
 
-    private List<DeliveryHubRoute> createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse) {
+    @Transactional
+    protected List<DeliveryHubRoute> createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse,Delivery delivery) {
 
         List<HubRoute> sortedRoutes = routeList.stream()
                 .sorted(Comparator.comparingInt(HubRoute::getSequenceNumber))
                 .toList();
-        return IntStream.range(0, sortedRoutes.size() - 1)
-                .mapToObj(i -> {
-                    HubRoute currentRoute = sortedRoutes.get(i);
-                    HubRoute nextRoute = sortedRoutes.get(i + 1);
-                    DeliveryHubRoute hubRoute = DeliveryHubRoute.to(currentRoute, nextRoute.getHubId());
-                    if (i == 0) {
-                        hubRoute.changeStatus(DeliveryStatusEnum.WAITING);
-                        hubRoute.setShipperId(deliveryDriverClientResponse.getDeliveryDriverId());
-                    }
-                    return hubRoute;
-                })
-                .collect(Collectors.toList());
+        List<DeliveryHubRoute> list = new ArrayList<>();
+
+        UUID firstDeliver = deliveryDriverClientResponse.getDeliveryDriverId();
+        for (int i = 0; i < sortedRoutes.size() - 1; i++) {
+            HubRoute current = sortedRoutes.get(i);
+            HubRoute next = sortedRoutes.get(i + 1);
+            DeliveryHubRoute hubRoute = DeliveryHubRoute.to(current,next.getHubId(),delivery);
+
+            if (i == 0){
+                hubRoute.setShipperId(firstDeliver);
+                hubRoute.changeStatus(DeliveryStatusEnum.WAITING);
+            }
+
+            list.add(deliveryHubRouteRepository.save(hubRoute));
+        }
+
+        return list;
+
     }
 
 
@@ -107,18 +132,45 @@ public class DeliveryService {
 
         delivery.setStatus(command.getStatus());
 
+        Integer seq = null;
 
-        if(command.getArrivedHub().equals(delivery.getEndHubId()) && command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
+        if(command.getStatus().equals(DeliveryStatusEnum.ACCEPTED)){
 
-            delivery.setStatus(DeliveryStatusEnum.IN_DELIVER);
+            if(command.getArrivedHub().equals(delivery.getEndHubId())){
+                delivery.setStatus(DeliveryStatusEnum.IN_DELIVER);
+                IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                        .orderId(delivery.getOrderId())
+                        .userId(delivery.getCompanyDeliver())
+                        .build();
+                updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
+                return;
+            }
 
-            designationCompanyDeliver(delivery);
+            for(DeliveryHubRoute hubRoute :  delivery.getDeliveryHubRouteList()){
+                if(hubRoute.getDestinationHub().equals(command.getArrivedHub())){
+                    hubRoute.updateDeliveryStatus(DeliveryStatusEnum.ACCEPTED);
+                    seq = hubRoute.getDeliverySequence();
+                }
+            }
+
+            for(DeliveryHubRoute hubRoute :  delivery.getDeliveryHubRouteList()){
+                // 다음 담당자 배정
+                if(hubRoute.getDeliverySequence().equals(seq + 1)) {
+                    hubRoute.setShipperId(getDeliveryDriver());
+                    IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
+                            .orderId(delivery.getOrderId())
+                            .userId(hubRoute.getShipperId())
+                            .build();
+                    updateKafkaTemplate.send("integrated-user-topic",identityIntegrationDTO);
+                }
+            }
         }
     }
 
-    private void designationCompanyDeliver(Delivery delivery) {
-        // 업체 배송 담당자 지정 로직
+    private UUID getDeliveryDriver() {
+        return userInfoClient.getRoute().getDeliveryDriverId();
     }
+
 
     @Transactional
     public void deleteDelivery(DeliveryDeleteCommand command) {
@@ -127,5 +179,50 @@ public class DeliveryService {
                 .orElseThrow(() -> new IllegalArgumentException("주문 ID에 해당하는 배송 정보를 찾을 수 없습니다."));
 
         delivery.delete(command.getUserName());
+    }
+
+    public UUID getOrderIdToHubId(UUID hubId, UUID orderId) {
+
+
+        Optional<UUID> deliveryHubRoute = deliveryHubRouteRepository.findByOrderIdAndStartHubOrDestinationHub(orderId, hubId);
+
+        if (deliveryHubRoute.isPresent()) {
+            return deliveryHubRoute.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public UUID getOrderIdToDeliver(UUID orderId, UUID userId) {
+        Optional<UUID> orderIdList = deliveryHubRouteRepository.findByOrderIdAndSearchDeliver(orderId, userId);
+
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public List<UUID> getOrderIdListToDeliver(UUID userId) {
+        Optional<List<UUID>> orderIdList = deliveryHubRouteRepository.findByUserIdSearchDeliver(userId);
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public List<UUID> getOrderIdListToHubId(UUID hubId) {
+        Optional<List<UUID>> orderIdList = deliveryHubRouteRepository.findByHubIdSearchDeliver(hubId);
+        if (orderIdList.isPresent()) {
+            return orderIdList.get();
+        } else {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+    }
+
+    public void updateDeliveryEvent(OrderStatusEvent value) {
+        Delivery delivery = deliveryRepository.findByOrderId(value.getOrderId());
+        delivery.setStatus(DeliveryStatusEnum.valueOf(value.getStatus()));
     }
 }

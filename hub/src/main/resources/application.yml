@@ -34,7 +34,7 @@ spring:
     baseline-on-migrate: true
 
 server:
-  port: 19091
+  port: 19095
 
 naver:
   maps:

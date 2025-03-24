@@ -2,6 +2,8 @@ package com.springcloud.client.user.infrastructure;
 
 import com.springcloud.client.user.domain.DeliveryDriver;
 import com.springcloud.client.user.domain.DeliveryDriverRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +21,6 @@ public interface DeliveryRepository extends JpaRepository<DeliveryDriver, UUID> 
     List<DeliveryDriver> findAllByRoleOrderByDeliveryOrderNumberAsc(DeliveryDriverRole role);
 
     List<DeliveryDriver> findAllByHubIdAndRoleOrderByDeliveryOrderNumberAsc(UUID hubId, DeliveryDriverRole role);
+
+    Page<DeliveryDriver> findByUser_UsernameContainingAndDeletedAtIsNull(String keyword, Pageable pageable);
 }

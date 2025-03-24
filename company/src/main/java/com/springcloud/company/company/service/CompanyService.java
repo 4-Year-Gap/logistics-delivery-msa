@@ -1,15 +1,22 @@
 package com.springcloud.company.company.service;
 
+import com.springcloud.company.common.IdentityIntegrationResponse;
+import com.springcloud.company.common.UserRole;
 import com.springcloud.company.company.dto.*;
 import com.springcloud.company.company.entity.Company;
 import com.springcloud.company.company.infrastructure.external.IdentityIntegrationEventPublisher;
 import com.springcloud.company.company.repository.CompanyRepository;
 import com.springcloud.company.product.entity.Product;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -23,27 +30,72 @@ public class CompanyService {
 
     private final IdentityIntegrationEventPublisher eventPublisher;
 
+    private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
+
+    //존재하는 허브Id인지 확인
     public Integer verifiedHubInfo(UUID hubId){
         return hubClient.verifiedHub(hubId);
     }
 
-    public CompanyResponseDto createCompany(CompanyRequestDto RequestDto, UUID userId) {
-        //존재하는 허브인지 확인
-        Integer hub = verifiedHubInfo(RequestDto.getHubId());
-        if (hub != 1) {
-            throw new IllegalArgumentException("존재하는 HubId가 아닙니다");
+    //유저 권한 확인 메서드 -> 래디스로 요청하여 userId에 해당하는 허브아이디, 배송아이디, 업체아이디 확인 가능하다.
+    private IdentityIntegrationResponse getIdentityIntegrationCache(UUID userId) {
+        HashOperations<String, String, IdentityIntegrationResponse> hashOps = redisTemplate.opsForHash();
+
+        IdentityIntegrationResponse identityIntegrationCache = hashOps.get("identityIntegrationCache", userId.toString());
+
+        if (null == identityIntegrationCache){
+            throw new IllegalArgumentException("레디스에 존재 하지 않음");
         }
+
+        return identityIntegrationCache;
+    }
+
+    // 업체 등록 기능
+    public CompanyResponseDto createCompany(CompanyRequestDto requestDto, UUID userId, UserRole userRole) {
+
+        // MASTER 또는 HUB_MANAGER만 업체 생성 가능
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        // MASTER 권한이면 바로 생성 진행
+        if (userRole == UserRole.MASTER) {
+            return createCompanyAndPublishEvent(requestDto, userId);
+        }
+
+        // HUB_MANAGER의 경우 본인 허브인지 검증 필요
+        IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+        UUID managerHubId = identityIntegrationResponse.getHubId(); // 허브 관리자 권한의 허브 ID
+
+        if (!managerHubId.equals(requestDto.getHubId())) {
+            throw new IllegalArgumentException("해당 허브의 업체만 생성할 수 있습니다.");
+        }
+
+        // 검증 통과 후 업체 생성
+        return createCompanyAndPublishEvent(requestDto, userId);
+    }
+
+    // 공통 로직 분리 (업체 생성 + Kafka 이벤트 발행)
+    private CompanyResponseDto createCompanyAndPublishEvent(CompanyRequestDto requestDto, UUID userId) {
+        // 존재하는 허브인지 확인
+        Integer hub = verifiedHubInfo(requestDto.getHubId());
+        if (hub != 1) {
+            throw new IllegalArgumentException("존재하는 HubId가 아닙니다.");
+        }
+
+        // 업체 생성
         Company company = Company.create(
-                RequestDto.getCompanyName(),
-                RequestDto.getHubId(),
-                RequestDto.getCompanyType(),
-                RequestDto.getAddress(),
+                requestDto.getCompanyName(),
+                requestDto.getHubId(),
+                requestDto.getCompanyType(),
+                requestDto.getAddress(),
                 userId
         );
+
         Company insertCompany = companyRepository.save(company);
 
-        //kafka 이벤트 큐 보내기
-        if(insertCompany.getUserId() != null && insertCompany.getId() != null){
+        // Kafka 이벤트 발행
+        if (insertCompany.getUserId() != null && insertCompany.getId() != null) {
             CreateIdentityIntegrationCommand integrationCommand = CreateIdentityIntegrationCommand.fromEntity(insertCompany);
             eventPublisher.publish(integrationCommand);
         }
@@ -51,7 +103,7 @@ public class CompanyService {
         return new CompanyResponseDto(company);
     }
 
-
+    // 주문 서버 요청 로직
     public OrderProductResponseDto readOrderProduct(UUID receivingCompanyId, UUID productId, Integer quantity) {
         //공급 업체 조회하기
         Company supplierCompany = companyRepository.findByProducts_Id(productId)
@@ -75,7 +127,12 @@ public class CompanyService {
 
     @Transactional
     // 업체 정보 수정
-    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId) {
+    public CompanyResponseDto updateCompany(UpdateCompanyRequestDto requestDto, UUID userId, UserRole userRole) {
+        //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
         Company company = companyRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("등록한 업체가 존재하지 않습니다."));
 
         // 업체의 userId와 JWT userID 일치하는지 확인
@@ -95,11 +152,22 @@ public class CompanyService {
     }
 
     // 업체 전체 조회
-    public List<CompanyResponseDto> getAllCompany(String keyword) {
-        List<Company> companyList = companyRepository.searchCompanys(keyword);
-        return companyList.stream()
-                .map(CompanyResponseDto::new)
-                .toList();
+    public Page<CompanyResponseDto> getAllCompany(Integer page, Integer size, String sortBy, String sortDirection, String keyword) {
+
+        //정렬 방향 결정
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        // Pageable 객체 생성
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // 검색어가 있는 경우 처리
+        if (keyword != null && !keyword.isEmpty()) {
+            return companyRepository.searchCompanies(keyword, pageable)
+                    .map(CompanyResponseDto::new);
+        } else {
+            return companyRepository.findAll(pageable)
+                    .map(CompanyResponseDto::new);
+        }
     }
 
     //업체 단일 조회

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,4 +23,9 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
     @Query(value = "SELECT c FROM Company c WHERE " +
             "(:keyword IS NULL OR c.companyName LIKE %:keyword%)")
     Page<Company> searchCompanies(String keyword, Pageable pageable);
+
+    // 특정 허브에 속한 업체 조회
+    List<Company> findByHubId(UUID hubId);
+
 }
+

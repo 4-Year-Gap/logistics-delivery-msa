@@ -13,6 +13,8 @@ import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.repository.ProductRepository;
 import com.springcloud.company.product.repository.ProductRockRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -46,12 +48,12 @@ public class ProductService {
     //상품 등록
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId, UserRole userRole) {
-        //권한 확인(마스터, 허브, 업체 담당자만 수정 가능)
+        //권한 확인(마스터, 허브, 업체 담당자만 등록 가능)
         if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
-        //유저 ID를 통해 업체 조회
+        //company ID를 통해 업체 조회
         Company company = companyRepository.findById(requestDto.getCompanyId())
                 .orElseThrow(()-> new IllegalArgumentException("해당 업체를 찾을 수 없습니다."));
 
@@ -108,14 +110,25 @@ public class ProductService {
 
     @Transactional
     //상품 수정_업체 -> 상품 수정
-    public ProductResponseDto updateProduct(UUID productId, UpdateProductRequestDto requestDto, UUID userId) {
+    public ProductResponseDto updateProduct(UUID productId, UpdateProductRequestDto requestDto, UUID userId, UserRole userRole) {
+        //권한 확인(마스터, 허브, 업체 담당자만 등록 가능)
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
         Product product = productRockRepository.findByIdWithLock(productId)
                 .orElseThrow(() -> new NoSuchElementException("Product not found"));
 
-        // 업체 담당자인지 확인
         Company company = product.getCompany();
-        if (!company.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("이 유저는 해당 상품을 삭제할 권한이 없습니다.");
+
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+            verifyHubAccess(userId, company.getHubId());
+        }
+
+        // 업체의 업체 담당자인지 확인 - userId와 JWT userID 일치하는지 확인
+        if (userRole == UserRole.COMPANY_MANAGER) {
+            verifyCompanyAccess(userId, company.getId());
         }
 
         product.updateProduct(requestDto.getProductName(),requestDto.getProductPrice(),requestDto.getQuantity(),userId);
@@ -123,16 +136,34 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    // 전체 상품 조회_ 어떤 권한도 접근 가능
-    public List<ProductResponseDto> getAllProducts(String keyword) {
-        List<Product> productList = productRepository.searchProducts(keyword);
+    // 전체 상품 조회_ 허브담당자는 담당 허브만 접근 가능
+    public Page<ProductResponseDto> getAllProducts(String keyword, UUID userId, UserRole userRole, Pageable pageable) {
+        Page<Product> productPage;
 
-        return productList.stream()
-                .map(ProductResponseDto::new)
-                .toList();
+        // HUB_MANAGER인 경우 담당 허브 검색
+        if (userRole == UserRole.HUB_MANAGER) {
+            IdentityIntegrationResponse identityIntegrationResponse = getIdentityIntegrationCache(userId);
+            UUID hubId = identityIntegrationResponse.getHubId();
+
+            // 허브 ID에 해당하는 업체들 조회
+            List<Company> companies = companyRepository.findByHubId(hubId);
+
+            // 해당 업체들의 ID 리스트 추출
+            List<UUID> companyIds = companies.stream()
+                    .map(Company::getId)
+                    .toList();
+
+            // 업체 ID 리스트에 속하는 상품만 조회 + 키워드 필터링
+            productPage = productRepository.findByCompanyIdInAndProductNameContaining(companyIds, keyword, pageable);
+        } else {
+            // 전체 업체에서 상품 조회 + 키워드 필터링
+            productPage = productRepository.findByProductNameContaining(keyword, pageable);
+        }
+
+        return productPage.map(ProductResponseDto::new);
     }
 
-    //상품 상세 조회_권한 설정 필요
+    //상품 상세 조회
     public ProductResponseDto getProduct(UUID productId) {
         Company company = companyService.getCompanyByProductId(productId);
 
@@ -166,13 +197,19 @@ public class ProductService {
 
     }
     @Transactional
-    public void deleteProduct(UUID productId, UUID userId) {
+    public void deleteProduct(UUID productId, UUID userId, UserRole userRole) {
         Company company = companyService.getCompanyByProductId(productId);
-
-        // 업체 담당자인지 확인
-        if (!company.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("이 유저는 해당 상품을 삭제할 권한이 없습니다.");
+        
+        //권한 확인(마스터, 허브관리자만 삭제 가능)
+        if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER) {
+            throw new IllegalArgumentException("권한이 없습니다.");
         }
+        
+        // HUB_MANAGER인 경우 허브 검증
+        if (userRole == UserRole.HUB_MANAGER) {
+            verifyHubAccess(userId, company.getHubId());
+        }
+
         Product product = company.getProducts().stream()
                 .filter( p -> p.getId().equals(productId))
                 .findAny()

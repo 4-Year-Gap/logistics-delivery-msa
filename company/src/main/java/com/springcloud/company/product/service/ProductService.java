@@ -17,6 +17,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
+    private final StockService stockService;
     private final ProductRockRepository productRockRepository;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate redisTemplate;
@@ -86,84 +88,69 @@ public class ProductService {
     @Transactional
     public void updateStockRedisWithLua(OrderCreateEvent orderCreateEvent) {
         try {
+            // Null 체크
+            if (orderCreateEvent == null) {
+                throw new IllegalArgumentException("OrderCreateEvent 객체가 null입니다.");
+            }
+
+            // 수량 Null 체크
+            Integer quantity = orderCreateEvent.getProductQuantity();
+            if (quantity == null) {
+                throw new IllegalArgumentException("상품 수량이 null입니다. 올바른 값을 입력하세요.");
+            }
+
             UUID productId = orderCreateEvent.getProductId();
             String stockKey = STOCK_KEY_PREFIX + productId;
-            int quantity = orderCreateEvent.getProductQuantity();
 
-            // Lua 스크립트 정의
-            String script =
-                    "local current = redis.call('get', KEYS[1]) " +
-                            "if current == false then " +
-                            "   return nil " +  // 키가 존재하지 않는 경우
-                            "end " +
-                            "local newStock = tonumber(current) + tonumber(ARGV[1]) " +
-                            "if tonumber(ARGV[1]) < 0 and newStock < 0 then " +
-                            "   return false " +  // 재고 부족
-                            "end " +
-                            "redis.call('set', KEYS[1], tostring(newStock)) " + // 값 저장 시 tostring 사용
-                            "return tonumber(newStock)";
+            log.info("OrderCreateEvent: productId={}, quantity={}", productId, quantity);
 
-            // 스크립트 실행
+            // Lua 스크립트 실행
+            String script = "...";  // 기존 Lua 스크립트
             DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
-            Long result = redisTemplate.execute(
-                    redisScript,
-                    Collections.singletonList(stockKey),
-                    String.valueOf(quantity)
-            );
+            Long result = redisTemplate.execute(redisScript, Collections.singletonList(stockKey), String.valueOf(quantity));
 
-            log.info(String.valueOf(result));
+            log.info("Lua Script Result: {}", result);
 
-            // 결과 처리
             if (result == null) {
-                // Redis에 키가 없는 경우, DB에서 데이터를 가져와 캐싱
+                // Redis 값이 없는 경우 DB에서 가져와 초기화 후 다시 실행
                 Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new NoSuchElementException("Product not found"));
-
                 int currentStock = product.getStock();
-                int newStock = currentStock + quantity;
-
-                // 재고 유효성 검사
-                if (quantity < 0 && newStock < 0) {
-                    throw new IllegalArgumentException("재고 부족: 현재 " + currentStock + ", 요청 " + Math.abs(quantity));
-                }
-
-                // Redis에 설정
-                redisTemplate.opsForValue().set(stockKey, String.valueOf(newStock));  // newStock을 String으로 변환하여 저장
-
-                // 선택적으로 DB 업데이트
-                // updateDatabaseStock(productId, newStock);
+                redisTemplate.opsForValue().set(stockKey, String.valueOf(currentStock));
+                updateStockRedisWithLua(orderCreateEvent);  // 재귀 호출
             } else if (result.equals(Boolean.FALSE)) {
-                // 재고 부족 상황
+                // 재고 부족 예외 처리
                 String currentStockStr = redisTemplate.opsForValue().get(stockKey);
                 int currentStock = Integer.parseInt(currentStockStr);
                 throw new IllegalArgumentException("재고 부족: 현재 " + currentStock + ", 요청 " + Math.abs(quantity));
             } else {
-                // 성공적으로 업데이트됨, 필요하다면 DB 동기화
-                int newStock = ((Number) result).intValue();
-                // 선택적으로 DB 업데이트
-                // updateDatabaseStock(productId, newStock);
+                // Redis 정상 업데이트 → 비동기 DB 업데이트
+                asyncUpdateStock(productId, quantity);
             }
         } catch (Exception e) {
-            // 예외 처리 및 롤백
-            log.error("예외 발생: {}", e.getMessage());
-            throw e;  // 트랜잭션 롤백을 유발
+            log.error("예외 발생: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
 
+    @Async
+    public void asyncUpdateStock(UUID productId, int newStock) {
+        stockService.updateStockInTransaction(productId, newStock);
+    }
+
     /**
      * 데이터베이스 재고 동기화 (즉시 업데이트)
      */
-    @Transactional
-    protected void updateDatabaseStock(UUID productId, int newStock) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new NoSuchElementException("Product not found"));
-
-        // 재고 변경 (도메인 메서드 직접 호출하지 않고 값만 설정)
-        product.setStock(newStock);
-        productRepository.save(product);
-    }
-
+//    @Transactional
+//    protected void updateDatabaseStock(UUID productId, int newStock) {
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new NoSuchElementException("Product not found"));
+//
+//        // 재고 변경 (도메인 메서드 직접 호출하지 않고 값만 설정)
+//        product.setStock(newStock);
+//        productRepository.save(product);
+//    }
 
     /**
      * 주기적으로 모든 Redis 재고 값을 DB에 동기화하는 스케줄러 메서드

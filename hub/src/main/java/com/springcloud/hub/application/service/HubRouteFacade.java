@@ -75,7 +75,7 @@ public class HubRouteFacade {
         // 캐시 검증
         List<GetHubRouteQuery> cachedRoute = hubRouteCacheStore.getShortestPath(getHubRouteCacheQuery);
 
-        if (cachedRoute != null) {
+        if (!cachedRoute.isEmpty()) {
             return cachedRoute;
         }
 

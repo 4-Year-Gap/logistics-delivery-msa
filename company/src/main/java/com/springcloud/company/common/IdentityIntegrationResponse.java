@@ -1,10 +1,7 @@
 package com.springcloud.company.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.List;
@@ -14,13 +11,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class IdentityIntegrationResponse implements Serializer {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private UUID userId;
     private UUID hubId;
     private UUID companyId;
-    private List<UUID> orderId;
+    private List<UUID> orderIdList;
     private UUID deliveryId;
 
     @Override
@@ -34,8 +33,8 @@ public class IdentityIntegrationResponse implements Serializer {
             throw new RuntimeException("Error serializing OrderCreateEvent", e);
         }
     }
-
-    public List<UUID> getOrderIdList() {
-        return this.orderId;
-    }
+//
+//    public List<UUID> getOrderIdList() {
+//        return this.orderId;
+//    }
 }

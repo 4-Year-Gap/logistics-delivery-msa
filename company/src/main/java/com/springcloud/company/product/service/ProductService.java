@@ -15,8 +15,6 @@ import com.springcloud.company.product.repository.ProductRockRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @AllArgsConstructor
@@ -40,12 +37,11 @@ public class ProductService {
     private final CompanyService companyService;
     private final StockService stockService;
     private final ProductRockRepository productRockRepository;
-    private final RedissonClient redissonClient;
-    private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
 
     private static final String STOCK_KEY_PREFIX = "product:stock:";
-    private static final String LOCK_KEY_PREFIX = "product:lock:";
+
     //유저 권한 확인 메서드 -> 래디스로 요청하여 userId에 해당하는 허브아이디, 배송아이디, 업체아이디 확인 가능하다.
     private IdentityIntegrationResponse getIdentityIntegrationCache(UUID userId) {
         HashOperations<String, String, IdentityIntegrationResponse> hashOps = redisTemplate.opsForHash();
@@ -61,10 +57,6 @@ public class ProductService {
 
     //상품 등록
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId) {
-        //유저 ID를 통해 업체 조회
-        Company company = companyRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 업체를 찾을 수 없습니다."));
     public ProductResponseDto createProduct(ProductRequestDto requestDto, UUID userId, UserRole userRole) {
         //권한 확인(마스터, 허브, 업체 담당자만 등록 가능)
         if (userRole != UserRole.MASTER && userRole != UserRole.HUB_MANAGER && userRole != UserRole.COMPANY_MANAGER) {
@@ -133,7 +125,7 @@ public class ProductService {
         List<Product> allProducts = productRepository.findAll();
         for (Product product : allProducts) {
             String stockKey = STOCK_KEY_PREFIX + product.getId();
-            redisTemplate.opsForValue().set(stockKey, String.valueOf(product.getStock()));
+            stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(product.getStock()));
         }
     }
 
@@ -172,11 +164,11 @@ public class ProductService {
                 Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new NoSuchElementException("Product not found"));
                 int currentStock = product.getStock();
-                redisTemplate.opsForValue().set(stockKey, String.valueOf(currentStock));
+                stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(currentStock));
                 updateStockRedisWithLua(orderCreateEvent);  // 재귀 호출
             } else if (result.equals(Boolean.FALSE)) {
                 // 재고 부족 예외 처리
-                String currentStockStr = redisTemplate.opsForValue().get(stockKey);
+                String currentStockStr = stringRedisTemplate.opsForValue().get(stockKey);
                 int currentStock = Integer.parseInt(currentStockStr);
                 throw new IllegalArgumentException("재고 부족: 현재 " + currentStock + ", 요청 " + Math.abs(quantity));
             } else {
@@ -189,24 +181,10 @@ public class ProductService {
         }
     }
 
-
     @Async
     public void asyncUpdateStock(UUID productId, int newStock) {
         stockService.updateStockInTransaction(productId, newStock);
     }
-
-    /**
-     * 데이터베이스 재고 동기화 (즉시 업데이트)
-     */
-//    @Transactional
-//    protected void updateDatabaseStock(UUID productId, int newStock) {
-//        Product product = productRepository.findById(productId)
-//                .orElseThrow(() -> new NoSuchElementException("Product not found"));
-//
-//        // 재고 변경 (도메인 메서드 직접 호출하지 않고 값만 설정)
-//        product.setStock(newStock);
-//        productRepository.save(product);
-//    }
 
     /**
      * 주기적으로 모든 Redis 재고 값을 DB에 동기화하는 스케줄러 메서드
@@ -222,7 +200,7 @@ public class ProductService {
         for (String key : stockKeys) {
             String productIdStr = key.substring(STOCK_KEY_PREFIX.length());
             UUID productId = UUID.fromString(productIdStr);
-            String stockStr = redisTemplate.opsForValue().get(key);
+            String stockStr = stringRedisTemplate.opsForValue().get(key);
 
             if (stockStr != null) {
                 int stock = Integer.parseInt(stockStr);
@@ -326,8 +304,6 @@ public class ProductService {
         return productList.stream()
                 .map(ProductResponseDto::new)
                 .toList();
-
-
     }
 
     @Transactional

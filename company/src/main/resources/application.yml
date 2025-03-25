@@ -38,6 +38,9 @@ spring:
 
 server:
   port: 19092
+  tomcat:
+    connection-timeout: 30s
+    max-connections: 200
 
 eureka:
   client:

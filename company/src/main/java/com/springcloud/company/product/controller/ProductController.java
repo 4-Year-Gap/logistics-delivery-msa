@@ -2,10 +2,12 @@ package com.springcloud.company.product.controller;
 
 import com.springcloud.company.common.UserInfoHeader;
 import com.springcloud.company.product.dto.*;
+import com.springcloud.company.product.infrastructure.dto.OrderCreateEvent;
 import com.springcloud.company.product.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
+import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
@@ -85,8 +88,15 @@ public class ProductController {
         productService.deleteProduct(productId,userInfo.getUserId(),userInfo.getUserRole());
     }
 
-
-
-
-
+    @PostMapping("/stock/test")
+    public ResponseEntity<String> updateStock(@RequestBody OrderCreateEvent orderCreateEvent) {
+        try {
+            productService.updateStockRedisWithLua(orderCreateEvent);
+            return ResponseEntity.ok("Stock updated successfully");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

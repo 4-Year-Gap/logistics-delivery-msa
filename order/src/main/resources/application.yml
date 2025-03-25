@@ -7,10 +7,10 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
+    url: jdbc:mysql://${Mysql_host}:3306/hub
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${Mysql_name}
+    password: ${Mysql_password}
     hikari:
       maximum-pool-size: 10
   kafka:

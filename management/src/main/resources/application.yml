@@ -26,13 +26,13 @@ spring:
 #      probability: 1.0
 
 slack:
-  key: ${Slack_key}
-  channel: ${Slack_channel}
+  key: test
+  channel: test
 
 ai:
   api:
-    key: ${AI_key}
-    url: ${AI_url}
+    key: test
+    url: test
 
 server:
   port: 19094

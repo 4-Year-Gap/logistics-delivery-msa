@@ -1,4 +1,6 @@
-package com.springcloud.client.delivery.domain.delivery;
+package com.springcloud.client.delivery.presentation.dto;
+
+import com.springcloud.client.delivery.application.DeliveryDeleteCommand;
 
 import java.util.UUID;
 

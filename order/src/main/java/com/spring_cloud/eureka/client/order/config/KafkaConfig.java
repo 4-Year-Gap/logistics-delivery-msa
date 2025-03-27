@@ -2,7 +2,7 @@ package com.spring_cloud.eureka.client.order.config;
 
 
 
-import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationCommand;
+import com.spring_cloud.eureka.client.order.application.IdentityIntegrationCommand;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderCreateEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.OrderStatusEvent;
 import com.spring_cloud.eureka.client.order.infrastructure.client.dto.ProductUpdateEvent;

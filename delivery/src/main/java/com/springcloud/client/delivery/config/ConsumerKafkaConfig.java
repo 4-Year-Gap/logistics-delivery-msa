@@ -1,6 +1,6 @@
 package com.springcloud.client.delivery.config;
 
-import com.springcloud.client.delivery.domain.delivery.OrderCreateEvent;
+import com.springcloud.client.delivery.application.OrderCreateEvent;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SaslConfigs;

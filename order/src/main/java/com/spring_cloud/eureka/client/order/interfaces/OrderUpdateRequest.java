@@ -2,7 +2,7 @@ package com.spring_cloud.eureka.client.order.interfaces;
 
 
 import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
-import com.spring_cloud.eureka.client.order.domain.order.OrderUpdateCommand;
+import com.spring_cloud.eureka.client.order.application.OrderUpdateCommand;
 import lombok.Getter;
 
 import java.util.UUID;

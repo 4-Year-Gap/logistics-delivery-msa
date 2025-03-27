@@ -1,19 +1,17 @@
 package com.spring_cloud.eureka.client.order.interfaces;
 
 
-import com.spring_cloud.eureka.client.order.application.OrderFacade;
+import com.spring_cloud.eureka.client.order.application.*;
 import com.spring_cloud.eureka.client.order.common.ApiResponse;
 import com.spring_cloud.eureka.client.order.domain.order.*;
 import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.IdentityIntegrationResponse;
 import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.*;
 
 

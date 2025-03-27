@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.interfaces;
+package com.spring_cloud.eureka.client.order.application;
 
 
 import lombok.AllArgsConstructor;

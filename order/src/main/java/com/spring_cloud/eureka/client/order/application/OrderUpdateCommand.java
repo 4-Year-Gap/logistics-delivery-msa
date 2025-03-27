@@ -1,5 +1,6 @@
-package com.spring_cloud.eureka.client.order.domain.order;
+package com.spring_cloud.eureka.client.order.application;
 
+import com.spring_cloud.eureka.client.order.domain.order.OrderEntityStatus;
 import lombok.Builder;
 import lombok.Getter;
 

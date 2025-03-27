@@ -2,7 +2,6 @@ package com.spring_cloud.eureka.client.order.application;
 
 
 import com.spring_cloud.eureka.client.order.domain.order.*;
-import com.spring_cloud.eureka.client.order.interfaces.OrderReadCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

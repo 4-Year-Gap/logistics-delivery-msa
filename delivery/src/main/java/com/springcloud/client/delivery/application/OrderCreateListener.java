@@ -2,8 +2,6 @@ package com.springcloud.client.delivery.application;
 
 
 import com.springcloud.client.delivery.application.service.DeliveryService;
-import com.springcloud.client.delivery.domain.delivery.OrderCreateEvent;
-import com.springcloud.client.delivery.domain.delivery.OrderStatusEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

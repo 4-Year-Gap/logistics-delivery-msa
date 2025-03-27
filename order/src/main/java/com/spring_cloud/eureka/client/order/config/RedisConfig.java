@@ -2,8 +2,8 @@ package com.spring_cloud.eureka.client.order.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationCommand;
-import com.spring_cloud.eureka.client.order.domain.order.IdentityIntegrationResponse;
+import com.spring_cloud.eureka.client.order.application.IdentityIntegrationCommand;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.IdentityIntegrationResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.springcloud.client.delivery.domain.delivery;
+package com.springcloud.client.delivery.application;
 
 
 import lombok.Builder;

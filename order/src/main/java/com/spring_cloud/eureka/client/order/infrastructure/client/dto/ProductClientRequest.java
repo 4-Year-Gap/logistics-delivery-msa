@@ -1,7 +1,7 @@
 package com.spring_cloud.eureka.client.order.infrastructure.client.dto;
 
 
-import com.spring_cloud.eureka.client.order.domain.order.OrderCreateCommand;
+import com.spring_cloud.eureka.client.order.application.OrderCreateCommand;
 import lombok.Builder;
 import lombok.Getter;
 

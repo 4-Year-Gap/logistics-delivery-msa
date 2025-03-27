@@ -1,6 +1,7 @@
 package com.springcloud.client.delivery.application.service;
 
 
+import com.springcloud.client.delivery.application.*;
 import com.springcloud.client.delivery.domain.delivery.*;
 //import com.springcloud.client.delivery.infrastructure.client.DeliveryDriverClient;
 import com.springcloud.client.delivery.infrastructure.client.HubClient;
@@ -18,11 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +31,7 @@ public class DeliveryService {
 
     private final HubClient hubClient;
     private final UserClient userInfoClient;
-    private final KafkaTemplate<String,IdentityIntegrationDTO> updateKafkaTemplate;
+    private final KafkaTemplate<String, IdentityIntegrationDTO> updateKafkaTemplate;
 
 
     public Page<Delivery> getDeliveries(UUID userId, String role, Pageable pageable,UUID hubId) {
@@ -66,12 +63,12 @@ public class DeliveryService {
             throw new IllegalArgumentException("배송자 정보를 받아오는데 실패하였습니다");
         }
 
-
-
-
         Delivery delivery = deliveryRepository.save(createDelivery(orderCreateEvent));
 
         createDeliveryHubRoute(hubClientResponse.getData(),deliveryDriverClientResponse,delivery);
+
+
+        //
 
         IdentityIntegrationDTO identityIntegrationDTO = IdentityIntegrationDTO.builder()
                 .userId(deliveryDriverClientResponse.getDeliveryDriverId())
@@ -83,7 +80,6 @@ public class DeliveryService {
 
     @Transactional
     protected Delivery createDelivery(OrderCreateEvent orderCreateEvent) {
-
 
         return Delivery.create(
                 orderCreateEvent.getAddress(),

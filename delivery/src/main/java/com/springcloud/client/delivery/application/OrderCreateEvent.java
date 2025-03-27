@@ -1,7 +1,5 @@
-package com.springcloud.client.delivery.domain.delivery;
+package com.springcloud.client.delivery.application;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

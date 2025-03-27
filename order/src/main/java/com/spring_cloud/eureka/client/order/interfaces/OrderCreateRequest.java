@@ -1,7 +1,7 @@
 package com.spring_cloud.eureka.client.order.interfaces;
 
 
-import com.spring_cloud.eureka.client.order.domain.order.OrderCreateCommand;
+import com.spring_cloud.eureka.client.order.application.OrderCreateCommand;
 import lombok.Getter;
 
 import java.util.UUID;

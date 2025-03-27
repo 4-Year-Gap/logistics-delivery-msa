@@ -1,4 +1,4 @@
-package com.springcloud.client.delivery.domain.delivery;
+package com.springcloud.client.delivery.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;

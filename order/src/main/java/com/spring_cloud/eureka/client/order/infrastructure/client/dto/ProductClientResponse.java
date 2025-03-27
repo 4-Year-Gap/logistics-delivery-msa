@@ -10,14 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductClientResponse {
-    @Override
-    public String toString() {
-        return "ProductClientResponse{" +
-                "productId=" + productId +
-                ", startHub=" + startHub +
-                ", endHub=" + endHub +
-                '}';
-    }
+
 
     private UUID productId; //제품 아이디
     private UUID startHub; // 제품 배달에 대한 시작 허브

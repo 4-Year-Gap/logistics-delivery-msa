@@ -1,17 +1,17 @@
 package com.spring_cloud.eureka.client.order.interfaces;
 
 
-import com.spring_cloud.eureka.client.order.application.OrderFacade;
+import com.spring_cloud.eureka.client.order.application.*;
 import com.spring_cloud.eureka.client.order.common.ApiResponse;
 import com.spring_cloud.eureka.client.order.domain.order.*;
+import com.spring_cloud.eureka.client.order.infrastructure.client.ProductClient;
+import com.spring_cloud.eureka.client.order.infrastructure.client.dto.IdentityIntegrationResponse;
+import com.spring_cloud.eureka.client.order.infrastructure.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -25,7 +25,9 @@ public class OrderController {
     private final OrderFacade orderFacade;
 
     private final KafkaTemplate<String, IdentityIntegrationCommand> updateKafkaTemplate;
-    private final RedisTemplate<String, IdentityIntegrationCommand> redisTemplate;
+    private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
+    private final ProductClient client;
+    private final OrderRepository orderRepository;
 
 
     @PostMapping
@@ -77,37 +79,36 @@ public class OrderController {
         return ApiResponse.ok(orderFacade.getOrders(pageable,orderSearchCondition));
     }
 
+    @GetMapping("/test22")
+    public OrderEntity test() {
+
+
+        HashOperations<String, String,IdentityIntegrationResponse> hashOps = redisTemplate.opsForHash();
+
+        IdentityIntegrationResponse value = hashOps.get("identityIntegrationCache","77daaade-593b-4284-8416-b82570e1ce4f");
+
+        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
+                value.getUserId(),
+                value.getCompanyId(),
+                value.getCompanyId()
+        );
+
+
+    }
+
+
     @GetMapping("/test")
-    public void test() {
+    public OrderEntity getStock(@RequestParam UUID userId) {
+        UUID companyId = client.getCompanyId(userId);
 
-
-        HashOperations<String, String,IdentityIntegrationCommand> hashOps = redisTemplate.opsForHash();
-
-        IdentityIntegrationCommand value = hashOps.get("identityIntegrationCache","18d703d7-8299-451f-9678-d5684bb48348");
-
-        System.out.println(value.getOrderId());
-
-
+        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
+                userId,
+                companyId,
+                companyId
+        );
     }
 
 
-    @GetMapping("/test2")
-    public void tesst() {
 
-        IdentityIntegrationCommand identityIntegrationCommand = IdentityIntegrationCommand.builder().
-                userId(UUID.fromString("a8517dce-9239-4695-a76c-210136566210"))
-                .orderId(UUID.randomUUID()).
-                build();
-
-
-        updateKafkaTemplate.send("integrated-user-topic","ORDER:CREATE", identityIntegrationCommand);
-
-    }
-
-    @GetMapping("/stock/test")
-    public ResponseEntity<String> getStock() {
-        System.out.println("test");
-        return ResponseEntity.ok("Success");
-    }
 
 }

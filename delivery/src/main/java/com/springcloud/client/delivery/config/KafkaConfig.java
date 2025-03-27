@@ -3,7 +3,7 @@ package com.springcloud.client.delivery.config;
 
 
 
-import com.springcloud.client.delivery.domain.delivery.IdentityIntegrationDTO;
+import com.springcloud.client.delivery.application.IdentityIntegrationDTO;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;

@@ -1,4 +1,4 @@
-package com.spring_cloud.eureka.client.order.domain.order;
+package com.spring_cloud.eureka.client.order.application;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.util.List;
 import java.util.UUID;
 
 

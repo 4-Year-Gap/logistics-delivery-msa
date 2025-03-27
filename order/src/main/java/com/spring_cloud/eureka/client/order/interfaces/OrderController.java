@@ -24,12 +24,6 @@ public class OrderController {
 
     private final OrderFacade orderFacade;
 
-    private final KafkaTemplate<String, IdentityIntegrationCommand> updateKafkaTemplate;
-    private final RedisTemplate<String, IdentityIntegrationResponse> redisTemplate;
-    private final ProductClient client;
-    private final OrderRepository orderRepository;
-
-
     @PostMapping
     public ApiResponse<?> createOrder(
             @RequestBody OrderCreateRequest orderCreateRequest,
@@ -78,37 +72,4 @@ public class OrderController {
 
         return ApiResponse.ok(orderFacade.getOrders(pageable,orderSearchCondition));
     }
-
-    @GetMapping("/test22")
-    public OrderEntity test() {
-
-
-        HashOperations<String, String,IdentityIntegrationResponse> hashOps = redisTemplate.opsForHash();
-
-        IdentityIntegrationResponse value = hashOps.get("identityIntegrationCache","77daaade-593b-4284-8416-b82570e1ce4f");
-
-        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
-                value.getUserId(),
-                value.getCompanyId(),
-                value.getCompanyId()
-        );
-
-
-    }
-
-
-    @GetMapping("/test")
-    public OrderEntity getStock(@RequestParam UUID userId) {
-        UUID companyId = client.getCompanyId(userId);
-
-        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
-                userId,
-                companyId,
-                companyId
-        );
-    }
-
-
-
-
 }

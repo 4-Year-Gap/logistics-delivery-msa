@@ -59,13 +59,12 @@ public class OrderService {
     private final String INTEGRATED_KEY = "ORDER:CREATE";
 
     private final String REDIS_INTEGRATED_KEY = "identityIntegrationCache";
+
     @Transactional
     public OrderEntity createOrder(OrderCreateCommand command) {
 
         ProductClientRequest productClientRequest = ProductClientRequest.create(command);
         ProductClientResponse productClientResponse = productClient.getProduct(productClientRequest);
-
-
 
 
         UserInfoClientResponse userInfoClientResponse = new UserInfoClientResponse();
@@ -76,29 +75,19 @@ public class OrderService {
 
         OrderCreateEvent orderCreateEvent = createOrderEvent(orderEntity, command, productClientResponse);
 
-        ProductUpdateEvent productUpdateEvent = createProductEvent(productClientResponse.getProductId(),command.getProductQuantity());
-        
+        ProductUpdateEvent productUpdateEvent = createProductEvent(productClientResponse.getProductId(), command.getProductQuantity());
+
         IdentityIntegrationCommand identityIntegrationDTO = IdentityIntegrationCommand.builder()
                 .orderId(orderEntity.getOrderId())
                 .userId(command.getUserId())
                 .build();
 
 
-
-
-
         createKafkaTemplate.send(ORDER_CREATE_TOPIC, CREATE_KEY_PREFIX + orderCreateEvent.getOrderId(), orderCreateEvent);
-//        productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, orderCreateEvent);
+        productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, orderCreateEvent);
 
 
-
-
-
-
-        userUpdateKafkaTemplate.send(INTEGRATED_USER_TOPIC,INTEGRATED_KEY, identityIntegrationDTO);
-
-
-
+        userUpdateKafkaTemplate.send(INTEGRATED_USER_TOPIC, INTEGRATED_KEY, identityIntegrationDTO);
 
 
         return orderEntity;
@@ -138,21 +127,20 @@ public class OrderService {
     public OrderUpdateInfo updateOrder(OrderUpdateCommand command) {
 
 
-        if (!udpateRoleCheck(command.getUserRole())){
+        if (!udpateRoleCheck(command.getUserRole())) {
             throw new IllegalArgumentException("권한이 없습니다");
         }
 
-        OrderReadCommand readCommand = new OrderReadCommand(command.getOrderId(),command.getUserId(),command.getUserRole());
+        OrderReadCommand readCommand = new OrderReadCommand(command.getOrderId(), command.getUserId(), command.getUserRole());
         OrderEntity orderEntity = getOneOrderInformationById(readCommand);
 
-//
-//        if (command.getOrderEntityStatus().equals(OrderEntityStatus.CANCELED)){
-//            ProductUpdateEvent productUpdateEvent = createProductEvent(orderEntity.getProductId(),orderEntity.getQuantity() * -1);
-//            productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, productUpdateEvent);
-//            OrderStatusEvent orderStatusEvent = createOrderStatusEvent(orderEntity.getOrderId(),command.getOrderEntityStatus());
-//            orderStausEventKafkaTemplate.send(ORDER_STATUS_TOPIC,orderStatusEvent);
-//        }
 
+        if (command.getOrderEntityStatus().equals(OrderEntityStatus.CANCELED)){
+            ProductUpdateEvent productUpdateEvent = createProductEvent(orderEntity.getProductId(),orderEntity.getQuantity() * -1);
+            productUpdateEventKafkaTemplate.send(PRODUCT_DECREASE_TOPIC, productUpdateEvent);
+            OrderStatusEvent orderStatusEvent = createOrderStatusEvent(orderEntity.getOrderId(),command.getOrderEntityStatus());
+            orderStausEventKafkaTemplate.send(ORDER_STATUS_TOPIC,orderStatusEvent);
+        }
 
 
         orderEntity.setStatus(command.getOrderEntityStatus());
@@ -167,12 +155,12 @@ public class OrderService {
     }
 
     private OrderStatusEvent createOrderStatusEvent(UUID orderId, OrderEntityStatus orderEntityStatus) {
-        return OrderStatusEvent.create(orderId,orderEntityStatus);
+        return OrderStatusEvent.create(orderId, orderEntityStatus);
     }
 
 
     private ProductUpdateEvent createProductEvent(UUID productId, Integer quantity) {
-        return ProductUpdateEvent.create(productId,quantity);
+        return ProductUpdateEvent.create(productId, quantity);
     }
 
     public OrderEntity getOneOrderInformationById(OrderReadCommand command) {
@@ -183,15 +171,6 @@ public class OrderService {
             case HUB_MANAGER -> getOrderForHubManager(command);
         };
     }
-
-//    private OrderEntity getOrderForCompanyManager(OrderReadCommand command) {
-//        IdentityIntegrationResponse integrationResponse = getIdentityIntegrationCache(command.getUserId());
-//        return orderRepository.findByOrderIdAndConsumeCompanyIdOrSupplyCompanyId(
-//                command.getOrderId(),
-//                integrationResponse.getCompanyId(),
-//                integrationResponse.getCompanyId()
-//        );
-//    }
 
     private OrderEntity getOrderForCompanyManager(OrderReadCommand command) {
         UUID companyId = productClient.getCompanyId(command.getUserId());
@@ -225,7 +204,7 @@ public class OrderService {
 
         IdentityIntegrationResponse identityIntegrationCache = hashOps.get("identityIntegrationCache", userId.toString());
 
-        if (null == identityIntegrationCache){
+        if (null == identityIntegrationCache) {
             throw new IllegalArgumentException("레디스에 존재 하지 않음");
         }
 
@@ -244,27 +223,27 @@ public class OrderService {
 
         return switch (UserRole.valueOf(orderSearchCondition.getUserRole())) {
             case MASTER -> orderRepository.findAll(pageable);
-            case COMPANY_MANAGER -> getOrderListForCompanyManager(pageable,orderSearchCondition);
-            case DELIVERY_STAFF ->getOrderListForDeliveryStaff(pageable,orderSearchCondition);
-            case HUB_MANAGER -> getOrderListForHubManager(pageable,orderSearchCondition);
+            case COMPANY_MANAGER -> getOrderListForCompanyManager(pageable, orderSearchCondition);
+            case DELIVERY_STAFF -> getOrderListForDeliveryStaff(pageable, orderSearchCondition);
+            case HUB_MANAGER -> getOrderListForHubManager(pageable, orderSearchCondition);
         };
     }
 
     private Page<OrderEntity> getOrderListForHubManager(Pageable pageable, OrderSearchCondition orderSearchCondition) {
         IdentityIntegrationResponse integrationResponse = getIdentityIntegrationCache(orderSearchCondition.getUserId());
         List<UUID> orderIdList = deliveryClient.getOrderIdListToHub(integrationResponse.getHubId());
-        return orderRepository.findAllByOrderIdIn(orderIdList,pageable);
+        return orderRepository.findAllByOrderIdIn(orderIdList, pageable);
     }
 
     private Page<OrderEntity> getOrderListForDeliveryStaff(Pageable pageable, OrderSearchCondition orderSearchCondition) {
         List<UUID> orderIdList = deliveryClient.getOrderIdListToDeliver(orderSearchCondition.getUserId());
-        return orderRepository.findAllByOrderIdIn(orderIdList,pageable);
+        return orderRepository.findAllByOrderIdIn(orderIdList, pageable);
 
     }
 
     private Page<OrderEntity> getOrderListForCompanyManager(Pageable pageable, OrderSearchCondition orderSearchCondition) {
         IdentityIntegrationResponse integrationResponse = getIdentityIntegrationCache(orderSearchCondition.getUserId());
-        return orderRepository.findAllByConsumeCompanyIdOrSupplyCompanyId(integrationResponse.getCompanyId(),integrationResponse.getCompanyId(),pageable);
+        return orderRepository.findAllByConsumeCompanyIdOrSupplyCompanyId(integrationResponse.getCompanyId(), integrationResponse.getCompanyId(), pageable);
     }
 
 }

@@ -86,12 +86,4 @@ public class DeliveryController {
         return deliveryService.getOrderIdListToDeliver(userId);
     }
 
-
-    @GetMapping("/test")
-    public ApiResponse<?> deleteDelivery(){
-
-        HubClientResponse<List<HubRoute>> list = hubClient.getRoute(UUID.fromString("86d7b72b-0270-11f0-87a5-0242ac130003"),UUID.fromString("86d6204c-0270-11f0-87a5-0242ac130003"));
-
-        return ApiResponse.ok(list.getData());
-    }
 }

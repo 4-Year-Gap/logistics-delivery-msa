@@ -3,7 +3,6 @@ package com.springcloud.client.delivery.application.service;
 
 import com.springcloud.client.delivery.application.*;
 import com.springcloud.client.delivery.domain.delivery.*;
-//import com.springcloud.client.delivery.infrastructure.client.DeliveryDriverClient;
 import com.springcloud.client.delivery.infrastructure.client.HubClient;
 import com.springcloud.client.delivery.infrastructure.client.UserClient;
 import com.springcloud.client.delivery.infrastructure.dto.DeliveryDriverClientResponse;
@@ -94,7 +93,7 @@ public class DeliveryService {
     }
 
     @Transactional
-    protected List<DeliveryHubRoute> createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse,Delivery delivery) {
+    protected void createDeliveryHubRoute(List<HubRoute> routeList, DeliveryDriverClientResponse deliveryDriverClientResponse, Delivery delivery) {
 
         List<HubRoute> sortedRoutes = routeList.stream()
                 .sorted(Comparator.comparingInt(HubRoute::getSequenceNumber))
@@ -114,8 +113,6 @@ public class DeliveryService {
 
             list.add(deliveryHubRouteRepository.save(hubRoute));
         }
-
-        return list;
 
     }
 

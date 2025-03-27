@@ -19,10 +19,6 @@ public class OrderCreateListener {
     @KafkaListener(groupId = "order_group",topics = "order-topic")
     public void createOrderEvent(ConsumerRecord<String, OrderCreateEvent> record){
 
-        log.info(record.value().getAddress());
-        log.info(record.value().getReceiverSlackId());
-
-
         deliveryService.confirmDelivery(record.value());
     }
 
